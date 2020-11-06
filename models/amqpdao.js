@@ -1,4 +1,4 @@
-const debug = require('debug')('millegrilles:coupdoeil:amqpdao')
+const debug = require('debug')('millegrilles:publication:amqpdao')
 const fs = require('fs')
 const {MilleGrillesPKI, MilleGrillesAmqpDAO} = require('millegrilles.common')
 
