@@ -6,10 +6,11 @@ function configurationEvenements(socket) {
     listenersPrives: [
       {eventName: 'publication/requeteSites', callback: (params, cb) => {requeteSites(socket, params, cb)}},
       {eventName: 'publication/requeteSite', callback: (params, cb) => {requeteSite(socket, params, cb)}},
+      {eventName: 'publication/requeteNoeuds', callback: (params, cb) => {requeteNoeuds(socket, params, cb)}},
     ],
     listenersProteges: [
-      {eventName: 'publication/ajouterSite', callback: (transaction, cb) => {
-        ajouterSite(socket, transaction, cb)
+      {eventName: 'publication/majSite', callback: (transaction, cb) => {
+        majSite(socket, transaction, cb)
       }},
     ]
   }
@@ -17,19 +18,19 @@ function configurationEvenements(socket) {
   return configurationEvenements
 }
 
-async function ajouterSite(socket, transaction, cb) {
+async function majSite(socket, transaction, cb) {
   // Ajout d'un nouveau site
-  console.debug("Recu ajouterSite : %O", transaction)
+  console.debug("Recu majSite : %O", transaction)
   try {
     if(transaction['en-tete'].domaine === 'Publication.majSite') {
       const amqpdao = socket.amqpdao
       const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
       return cb(reponse)
     } else {
-      return cb({err: 'Mauvais domaine pour ajouterSite : ' + transaction.domaine})
+      return cb({err: 'Mauvais domaine pour majSite : ' + transaction.domaine})
     }
   } catch(err) {
-    console.error("ajouterSite %O", err)
+    console.error("majSite %O", err)
     return cb({err: ''+err})
   }
 }
@@ -71,6 +72,10 @@ function requeteSites(socket, params, cb) {
 
 function requeteSite(socket, params, cb) {
   executerRequete('Publication.configurationSite', socket, params, cb)
+}
+
+function requeteNoeuds(socket, params, cb) {
+  executerRequete('Topologie.listeNoeuds', socket, params, cb)
 }
 
 async function executerRequete(domaineAction, socket, params, cb) {
