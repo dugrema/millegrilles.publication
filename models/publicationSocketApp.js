@@ -1,10 +1,10 @@
 var fs = require('fs');
-const debug = require('debug')('millegrilles:publication:coupdoeilSocketApp')
+const debug = require('debug')('millegrilles:publication:publicationSocketApp')
 
 function configurationEvenements(socket) {
   const configurationEvenements = {
     listenersPrives: [
-      // {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => {requeteListeNoeuds(socket, params, cb)}},
+      {eventName: 'publication/requeteSites', callback: (params, cb) => {requeteSites(socket, params, cb)}},
     ],
     listenersProteges: [
       // {eventName: 'coupdoeil/ajouterCatalogueApplication', callback: (transaction, cb) => {
@@ -65,9 +65,20 @@ function configurationEvenements(socket) {
 //       }
 //     });
 // }
-//
-// function requeteListeNoeuds(socket, params, cb) {
-//   executerRequete('Topologie.listeNoeuds', socket, params, cb)
-// }
+
+function requeteSites(socket, params, cb) {
+  executerRequete('Publication.listeSites', socket, params, cb)
+}
+
+async function executerRequete(domaineAction, socket, params, cb) {
+  const amqpdao = socket.amqpdao
+  try {
+    const reponse = await amqpdao.transmettreRequete(domaineAction, params, {decoder: true})
+    cb(reponse)
+  } catch(err) {
+    debug("Erreur executerRequete\n%O", err)
+    cb({err: 'Erreur: ' + err})
+  }
+}
 
 module.exports = {configurationEvenements};
