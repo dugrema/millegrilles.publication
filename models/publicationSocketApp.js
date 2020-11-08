@@ -10,7 +10,10 @@ function configurationEvenements(socket) {
     ],
     listenersProteges: [
       {eventName: 'publication/majSite', callback: (transaction, cb) => {
-        majSite(socket, transaction, cb)
+        soumettreTransaction(socket, transaction, 'Publication.majSite', cb)
+      }},
+      {eventName: 'publication/majPost', callback: (transaction, cb) => {
+        soumettreTransaction(socket, transaction, 'Publication.majPost', cb)
       }},
     ]
   }
@@ -18,22 +21,39 @@ function configurationEvenements(socket) {
   return configurationEvenements
 }
 
-async function majSite(socket, transaction, cb) {
-  // Ajout d'un nouveau site
-  console.debug("Recu majSite : %O", transaction)
-  try {
-    if(transaction['en-tete'].domaine === 'Publication.majSite') {
-      const amqpdao = socket.amqpdao
-      const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
-      return cb(reponse)
-    } else {
-      return cb({err: 'Mauvais domaine pour majSite : ' + transaction.domaine})
-    }
-  } catch(err) {
-    console.error("majSite %O", err)
-    return cb({err: ''+err})
-  }
-}
+// async function majSite(socket, transaction, cb) {
+//   // Ajout d'un nouveau site
+//   console.debug("Recu majSite : %O", transaction)
+//   try {
+//     if(transaction['en-tete'].domaine === 'Publication.majSite') {
+//       const amqpdao = socket.amqpdao
+//       const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
+//       return cb(reponse)
+//     } else {
+//       return cb({err: 'Mauvais domaine pour majSite : ' + transaction.domaine})
+//     }
+//   } catch(err) {
+//     console.error("majSite %O", err)
+//     return cb({err: ''+err})
+//   }
+// }
+//
+// async function majPost(socket, transaction, cb) {
+//   // Ajout d'un nouveau site
+//   console.debug("Recu majPost : %O", transaction)
+//   try {
+//     if(transaction['en-tete'].domaine === 'Publication.majPost') {
+//       const amqpdao = socket.amqpdao
+//       const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
+//       return cb(reponse)
+//     } else {
+//       return cb({err: 'Mauvais domaine pour majPost : ' + transaction.domaine})
+//     }
+//   } catch(err) {
+//     console.error("majPost %O", err)
+//     return cb({err: ''+err})
+//   }
+// }
 
 // function traiterCommande(rabbitMQ, enveloppe, cb) {
 //   // console.debug("Enveloppe de commande recue");
@@ -86,6 +106,23 @@ async function executerRequete(domaineAction, socket, params, cb) {
   } catch(err) {
     debug("Erreur executerRequete\n%O", err)
     cb({err: 'Erreur: ' + err})
+  }
+}
+
+async function soumettreTransaction(socket, transaction, domaineValide, cb) {
+  // Verifie le domaine d'une transaction et la transmet a MQ
+  console.debug("Recu %s : %O", domaineValide, transaction)
+  try {
+    if(transaction['en-tete'].domaine === domaineValide) {
+      const amqpdao = socket.amqpdao
+      const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
+      return cb(reponse)
+    } else {
+      return cb({err: 'Mauvais domaine pour ' + domaineValide + ' : ' + transaction.domaine})
+    }
+  } catch(err) {
+    console.error("%s %O", domaineValide, err)
+    return cb({err: ''+err})
   }
 }
 
