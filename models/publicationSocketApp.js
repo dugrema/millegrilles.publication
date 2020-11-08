@@ -6,6 +6,7 @@ function configurationEvenements(socket) {
     listenersPrives: [
       {eventName: 'publication/requeteSites', callback: (params, cb) => {requeteSites(socket, params, cb)}},
       {eventName: 'publication/requeteSite', callback: (params, cb) => {requeteSite(socket, params, cb)}},
+      {eventName: 'publication/requetePosts', callback: (params, cb) => {requetePosts(socket, params, cb)}},
       {eventName: 'publication/requeteNoeuds', callback: (params, cb) => {requeteNoeuds(socket, params, cb)}},
     ],
     listenersProteges: [
@@ -20,40 +21,6 @@ function configurationEvenements(socket) {
 
   return configurationEvenements
 }
-
-// async function majSite(socket, transaction, cb) {
-//   // Ajout d'un nouveau site
-//   console.debug("Recu majSite : %O", transaction)
-//   try {
-//     if(transaction['en-tete'].domaine === 'Publication.majSite') {
-//       const amqpdao = socket.amqpdao
-//       const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
-//       return cb(reponse)
-//     } else {
-//       return cb({err: 'Mauvais domaine pour majSite : ' + transaction.domaine})
-//     }
-//   } catch(err) {
-//     console.error("majSite %O", err)
-//     return cb({err: ''+err})
-//   }
-// }
-//
-// async function majPost(socket, transaction, cb) {
-//   // Ajout d'un nouveau site
-//   console.debug("Recu majPost : %O", transaction)
-//   try {
-//     if(transaction['en-tete'].domaine === 'Publication.majPost') {
-//       const amqpdao = socket.amqpdao
-//       const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
-//       return cb(reponse)
-//     } else {
-//       return cb({err: 'Mauvais domaine pour majPost : ' + transaction.domaine})
-//     }
-//   } catch(err) {
-//     console.error("majPost %O", err)
-//     return cb({err: ''+err})
-//   }
-// }
 
 // function traiterCommande(rabbitMQ, enveloppe, cb) {
 //   // console.debug("Enveloppe de commande recue");
@@ -92,6 +59,10 @@ function requeteSites(socket, params, cb) {
 
 function requeteSite(socket, params, cb) {
   executerRequete('Publication.configurationSite', socket, params, cb)
+}
+
+function requetePosts(socket, params, cb) {
+  executerRequete('Publication.posts', socket, params, cb)
 }
 
 function requeteNoeuds(socket, params, cb) {
