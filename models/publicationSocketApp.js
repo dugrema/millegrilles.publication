@@ -8,9 +8,11 @@ function configurationEvenements(socket) {
       {eventName: 'publication/requeteSite', callback: (params, cb) => {requeteSite(socket, params, cb)}},
       {eventName: 'publication/requetePosts', callback: (params, cb) => {requetePosts(socket, params, cb)}},
       {eventName: 'publication/requeteNoeuds', callback: (params, cb) => {requeteNoeuds(socket, params, cb)}},
+      {eventName: 'publication/requeteCollectionsPubliques', callback: (params, cb) => {requeteCollectionsPubliques(socket, params, cb)}},
     ],
     listenersProteges: [
       {eventName: 'publication/majSite', callback: (transaction, cb) => {
+        debug("Publication/majSite: %O", transaction)
         soumettreTransaction(socket, transaction, 'Publication.majSite', cb)
       }},
       {eventName: 'publication/majPost', callback: (transaction, cb) => {
@@ -67,6 +69,10 @@ function requetePosts(socket, params, cb) {
 
 function requeteNoeuds(socket, params, cb) {
   executerRequete('Topologie.listeNoeuds', socket, params, cb)
+}
+
+function requeteCollectionsPubliques(socket, params, cb) {
+  executerRequete('GrosFichiers.collectionsPubliques', socket, params, cb)
 }
 
 async function executerRequete(domaineAction, socket, params, cb) {
