@@ -1,6 +1,6 @@
 {
   "name": "publication",
-  "version": "1.37.0",
+  "version": "1.39.0",
   "main": "index.js",
   "private": true,
   "repository": {
@@ -14,7 +14,7 @@
     "client": "export WDS_SOCKET_PATH=/coupdoeil/sockjs-node && node ./bin/start-client"
   },
   "dependencies": {
-    "@dugrema/millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.37",
+    "@dugrema/millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.39",
     "amqplib": "^0.5.6",
     "debug": "~2.6.9",
     "express": "~4.16.4",
