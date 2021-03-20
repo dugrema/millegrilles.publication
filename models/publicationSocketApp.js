@@ -1,7 +1,7 @@
 var fs = require('fs');
 const debug = require('debug')('millegrilles:publication:publicationSocketApp')
 
-function configurationEvenements(socket) {
+function configurerEvenements(socket) {
   const configurationEvenements = {
     listenersPrives: [
       {eventName: 'publication/requeteSites', callback: (params, cb) => {requeteSites(socket, params, cb)}},
@@ -103,4 +103,4 @@ async function soumettreTransaction(socket, transaction, domaineValide, cb) {
   }
 }
 
-module.exports = {configurationEvenements};
+module.exports = {configurerEvenements}
