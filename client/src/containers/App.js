@@ -1,7 +1,6 @@
 import React from 'react'
 import {Alert} from 'react-bootstrap'
 
-import { WebSocketPublication as WebSocketManager } from '../components/webSocketManager'
 import { VerificationInfoServeur } from './Authentification'
 import { MenuItems } from './Menu'
 
@@ -44,14 +43,12 @@ export class ApplicationPublication extends React.Component {
 
   componentDidMount() {
 
-    const wsa = new WebSocketManager(this.props.rootProps.connexionSocketIo)
-    this.props.rootProps.connexionSocketIo.emit('changerApplication', 'publication', reponse=>{
-      if(reponse && reponse.err) {
-        console.error("Erreur enregistrements publication socket.io :\n%O", reponse)
-        return
-      }
-      this.setState({websocketApp: wsa})
-    })
+    const wsa = this.props.rootProps.connexionWorker
+    wsa.isFormatteurReady()
+      .then( async _ =>{
+        console.debug("Formatteur ready sur connexion")
+        this.setState({websocketApp: wsa})
+      })
 
     this.props.setSousMenuApplication(
       <MenuItems
@@ -94,7 +91,7 @@ export class ApplicationPublication extends React.Component {
 
     // Signer transaction, soumettre
     //const signateurTransaction = this.state.signateurTransaction
-    const webWorker = this.props.rootProps.webWorker
+    const webWorker = this.props.rootProps.chiffrageWorker
     //await signateurTransaction.preparerTransaction(transaction, domaineAction)
     transaction = await webWorker.formatterMessage(transaction, domaineAction)
     const siteId = transaction['en-tete']['uuid_transaction']

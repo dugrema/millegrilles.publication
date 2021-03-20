@@ -1,5 +1,6 @@
 import React from 'react'
 import {Row, Col, Button, Form, FormControl, InputGroup, Alert, Nav} from 'react-bootstrap'
+import {proxy as comlinkProxy} from 'comlink'
 
 import InfoSite from './InfoSite'
 import AccueilSite from './AccueilSite'
@@ -25,7 +26,7 @@ export default class EditerSite extends React.Component {
       // console.debug("Site charge : %O", site)
       this.setState({site}, _ =>{
         // Enregistrer evenements
-        wsa.subscribe(routingKeysSite, this.messageRecu, {exchange: '3.protege'})
+        wsa.subscribe(routingKeysSite, this.messageRecu, {exchange: ['3.protege']})
       })
     })
 
@@ -40,10 +41,10 @@ export default class EditerSite extends React.Component {
 
   componentWillUnmount() {
     const wsa = this.props.rootProps.websocketApp
-    wsa.unsubscribe(routingKeysSite, this.messageRecu, {exchange: '3.protege'})
+    wsa.unsubscribe(routingKeysSite, this.messageRecu, {exchange: ['3.protege']})
   }
 
-  messageRecu = event => {
+  messageRecu = comlinkProxy(event => {
     console.debug("Message MQ recu : %O", event)
 
     const message = event.message,
@@ -55,7 +56,7 @@ export default class EditerSite extends React.Component {
       const siteModifie = {...this.state.site, ...message}
       this.setState({site: siteModifie}, _=>{console.debug("MAJ apres update : %O", this.state)})
     }
-  }
+  })
 
   changerSection = section => {
     this.setState({sectionCourante: sections[section]})

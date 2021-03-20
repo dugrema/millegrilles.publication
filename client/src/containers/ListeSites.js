@@ -1,5 +1,6 @@
 import React from 'react'
 import {Row, Col, Button} from 'react-bootstrap'
+import {proxy as comlinkProxy} from 'comlink'
 
 const routingKeysSite = [
   'transaction.Publication.*.majSite',
@@ -19,17 +20,17 @@ export default class ListeNoeuds extends React.Component {
       // console.debug("Sites charges : %O", sites)
       this.setState({sites}, _=>{
         // Enregistrer evenements
-        wsa.subscribe(routingKeysSite, this.messageRecu, {exchange: '3.protege'})
+        wsa.subscribe(routingKeysSite, this.messageRecu, {exchange: ['3.protege']})
       })
     })
   }
 
   componentWillUnmount() {
     const wsa = this.props.rootProps.websocketApp
-    wsa.unsubscribe(routingKeysSite, this.messageRecu, {exchange: '3.protege'})
+    wsa.unsubscribe(routingKeysSite, this.messageRecu, {exchange: ['3.protege']})
   }
 
-  messageRecu = event => {
+  messageRecu = comlinkProxy(event => {
     console.debug("Message MQ recu : %O", event)
 
     const message = event.message,
@@ -41,7 +42,7 @@ export default class ListeNoeuds extends React.Component {
       const sites = majListeSites(message, this.state.sites)
       this.setState({sites})
     }
-  }
+  })
 
   render() {
     return (

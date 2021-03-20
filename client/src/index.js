@@ -5,14 +5,14 @@ import 'font-awesome/css/font-awesome.min.css';
 
 // import { ApplicationDev } from './AppDev';
 
-import { AppDev } from './dev/AppDev';
+import App from './AppTopLevel';
 import './components/i18n';
 
 import * as serviceWorker from './serviceWorker';
 
 console.debug("window : %O", window)
 
-ReactDOM.render(<AppDev />, document.getElementById('root'));
+ReactDOM.render(<App />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

@@ -31,10 +31,10 @@
     "uuid": "^8.2.0"
   },
   "scripts": {
-    "start": "export WDS_SOCKET_PATH=/publication/sockjs-node && react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "export WDS_SOCKET_PATH=/publication/sockjs-node && rescripts start",
+    "build": "rescripts build",
+    "test": "rescripts test",
+    "eject": "rescripts eject"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -54,6 +54,8 @@
   "proxy": "https://localhost:3023",
   "homepage": "/publication",
   "devDependencies": {
+    "@rescripts/cli": "0.0.16",
+    "rescript-worker-loader": "^1.0.4",
     "worker-loader": "^3.0.8"
   }
 }
