@@ -154,7 +154,7 @@ export default class InfoSite extends React.Component {
     try {
       // const signateurTransaction = this.props.rootProps.signateurTransaction
       // await signateurTransaction.preparerTransaction(transaction, domaineAction)
-      const webWorker = this.props.rootProps.webWorker
+      const webWorker = this.props.rootProps.chiffrageWorker
       transaction = await webWorker.formatterMessage(transaction, domaineAction)
       const siteId = transaction['en-tete']['uuid_transaction']
       console.debug("Maj site %s, Transaction a soumettre : %O", siteId, transaction)

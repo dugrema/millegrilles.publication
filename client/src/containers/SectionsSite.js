@@ -123,7 +123,7 @@ export default class SectionsSite extends React.Component {
       try {
         // const signateurTransaction = this.props.rootProps.signateurTransaction
         // await signateurTransaction.preparerTransaction(transaction, domaineAction)
-        const webWorker = this.props.rootProps.webWorker
+        const webWorker = this.props.rootProps.chiffrageWorker
         transaction = await webWorker.formatterMessage(transaction, domaineAction)
         console.debug("Maj site %s, Transaction a soumettre : %O", this.props.siteId, transaction)
 

@@ -167,7 +167,7 @@ export default class SectionAccueil extends React.Component {
 
     // const signateurTransaction = this.props.rootProps.signateurTransaction
     // const wsa = this.props.rootProps.websocketApp
-    const {webWorker, websocketApp: wsa} = this.props.rootProps
+    const {chiffrageWorker, websocketApp: wsa} = this.props.rootProps
 
     // Sauvegarder les nouveaux posts
     if(this.state.postsModifies) {
@@ -178,7 +178,7 @@ export default class SectionAccueil extends React.Component {
           const domaineAction = 'Publication.majPost'
           var transaction = {...post}
 
-          transaction = await webWorker.formatterMessage(transaction, domaineAction)
+          transaction = await chiffrageWorker.formatterMessage(transaction, domaineAction)
           console.debug("Nouveau post %s, Transaction a soumettre : %O", post_id, transaction)
           const reponse = await wsa.majPost(transaction)
           console.debug("Reponse maj post : %O", reponse)
@@ -214,7 +214,7 @@ export default class SectionAccueil extends React.Component {
 
       try {
         // await signateurTransaction.preparerTransaction(transaction, domaineAction)
-        transaction = await webWorker.formatterMessage(transaction, domaineAction)
+        transaction = await chiffrageWorker.formatterMessage(transaction, domaineAction)
         console.debug("Maj site %s, Transaction a soumettre : %O", this.props.siteId, transaction)
 
         const reponse = await wsa.majSite(transaction)
