@@ -99,9 +99,9 @@ makeManifest() {
 REP_COURANT=`pwd`
 REP_STATIC_GLOBAL=${REP_COURANT}/static
 BUILD_FILE="${NAME}.${VERSION}.tar.gz"
-BUILD_PATH="git/millegrilles.grosfichiers"
+BUILD_PATH="git/millegrilles.publication"
 
 # docker pull node:12
 # npm install --production
 
-traiter_fichier_react grosfichiers
+traiter_fichier_react publication
