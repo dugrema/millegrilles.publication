@@ -9,9 +9,7 @@
   },
   "scripts": {
     "start": "node ./bin/www",
-    "hebergement": "node ./bin/hebergement",
-    "test": "node ./bin/test",
-    "client": "export WDS_SOCKET_PATH=/coupdoeil/sockjs-node && node ./bin/start-client"
+    "test": "node ./bin/test"
   },
   "dependencies": {
     "@dugrema/millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.40",

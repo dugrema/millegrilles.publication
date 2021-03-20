@@ -146,12 +146,13 @@ function ajouterStaticRoute(route) {
 
 function routeInfo(req, res, next) {
   debug(req.headers)
-  const idmgCompte = req.headers['idmg-compte']
-  const nomUsager = req.headers['user-prive']
+  const idmg = req.idmg
+  const nomUsager = req.headers['user-name']
+  const userId = req.headers['user-id']
   const niveauSecurite = req.headers['user-securite']
   const host = req.headers.host
 
-  const reponse = {idmgCompte, nomUsager, hostname: host, niveauSecurite}
+  const reponse = {idmg, nomUsager, userId, hostname: host, niveauSecurite}
   return res.send(reponse)
 }
 
