@@ -1,0 +1,59 @@
+{
+  "name": "publication-client",
+  "version": "1.40.0",
+  "private": true,
+  "dependencies": {
+    "@dugrema/millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.40",
+    "@wojtekmaj/react-daterange-picker": "^2.5.0",
+    "axios": "^0.19.2",
+    "bootstrap": "^4.5.3",
+    "comlink": "^4.3.0",
+    "font-awesome": "^4.7.0",
+    "html-react-parser": "^0.14.3",
+    "i18next": "^19.4.4",
+    "i18next-browser-languagedetector": "^4.1.1",
+    "idb": "^5.0.6",
+    "jquery": "^3.5.1",
+    "moment": "^2.25.3",
+    "moment-timezone": "^0.5.28",
+    "popper.js": "^1.16.1",
+    "qrcode.react": "^1.0.0",
+    "react": "^16.13.1",
+    "react-bootstrap": "^1.0.1",
+    "react-dnd": "^10.0.2",
+    "react-dnd-html5-backend": "^10.0.2",
+    "react-dom": "^16.13.1",
+    "react-dropzone": "^11.2.0",
+    "react-i18next": "^11.8.4",
+    "react-scripts": "^3.4.0",
+    "react-summernote": "^2.0.2",
+    "socket.io-client": "^2.2.0",
+    "uuid": "^8.2.0"
+  },
+  "scripts": {
+    "start": "export WDS_SOCKET_PATH=/publication/sockjs-node && react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "proxy": "https://localhost:3023",
+  "homepage": "/publication",
+  "devDependencies": {
+    "worker-loader": "^3.0.8"
+  }
+}
