@@ -76,7 +76,7 @@ export default class AppTopLevel extends React.Component {
       try {
         const resultat = await this.state.connexionWorker.upgradeProteger()
       } catch(err) {
-        console.error("BIARE! %O", err)
+        console.error("Erreur upgrade protege %O", err)
       }
     }
   }

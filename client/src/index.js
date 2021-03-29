@@ -10,7 +10,7 @@ import './components/i18n';
 
 import * as serviceWorker from './serviceWorker';
 
-console.debug("window : %O", window)
+// console.debug("window : %O", window)
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
