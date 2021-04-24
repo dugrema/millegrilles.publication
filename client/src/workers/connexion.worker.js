@@ -30,6 +30,10 @@ function requeteCollectionsPubliques() {
   return connexionClient.emitBlocking('publication/requeteCollectionsPubliques', {})
 }
 
+function requeteListeCdns() {
+  return connexionClient.emitBlocking('publication/requeteListeCdns', {})
+}
+
 // Commandes
 
 function majSite(transaction) {
@@ -40,11 +44,17 @@ function majPost(transaction) {
   return connexionClient.emitBlocking('publication/majPost', transaction)
 }
 
+function majCdn(params) {
+  return connexionClient.emitBlocking('publication/majCdn', params)
+}
+
 
 comlinkExpose({
   ...connexionClient,
   connecter,  // Override de connexionClient.connecter
 
   requeteSites, requeteSite, requetePosts, requeteNoeudsPublics,
-  requeteCollectionsPubliques, majSite, majPost
+  requeteCollectionsPubliques, requeteListeCdns,
+
+  majSite, majPost, majCdn
 })

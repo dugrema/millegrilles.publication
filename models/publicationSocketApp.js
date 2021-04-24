@@ -9,6 +9,7 @@ function configurerEvenements(socket) {
       {eventName: 'publication/requetePosts', callback: (params, cb) => {requetePosts(socket, params, cb)}},
       {eventName: 'publication/requeteNoeuds', callback: (params, cb) => {requeteNoeuds(socket, params, cb)}},
       {eventName: 'publication/requeteCollectionsPubliques', callback: (params, cb) => {requeteCollectionsPubliques(socket, params, cb)}},
+      {eventName: 'publication/requeteListeCdns', callback: (params, cb) => {requeteListeCdns(socket, params, cb)}},
     ],
     listenersProteges: [
       {eventName: 'publication/majSite', callback: (transaction, cb) => {
@@ -73,6 +74,11 @@ function requeteNoeuds(socket, params, cb) {
 
 function requeteCollectionsPubliques(socket, params, cb) {
   executerRequete('GrosFichiers.collectionsPubliques', socket, params, cb)
+}
+
+function requeteListeCdns(socket, params, cb) {
+  debug("Requete liste CDNS : %O", params)
+  executerRequete('Publication.listeCdn', socket, params, cb)
 }
 
 async function executerRequete(domaineAction, socket, params, cb) {
