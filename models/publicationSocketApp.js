@@ -19,6 +19,9 @@ function configurerEvenements(socket) {
       {eventName: 'publication/majPost', callback: (transaction, cb) => {
         soumettreTransaction(socket, transaction, 'Publication.majPost', cb)
       }},
+      {eventName: 'publication/majCdn', callback: (params, cb) => {
+        soumettreMajCdn(socket, params, cb)
+      }},
     ]
   }
 
@@ -107,6 +110,10 @@ async function soumettreTransaction(socket, transaction, domaineValide, cb) {
     console.error("%s %O", domaineValide, err)
     return cb({err: ''+err})
   }
+}
+
+async function soumettreMajCdn(socket, params, cb) {
+  throw new Error("TO DO")
 }
 
 module.exports = {configurerEvenements}
