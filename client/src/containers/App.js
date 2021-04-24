@@ -1,5 +1,5 @@
 import React from 'react'
-import {Alert} from 'react-bootstrap'
+import {Alert, Nav} from 'react-bootstrap'
 
 import { VerificationInfoServeur } from './Authentification'
 import { MenuItems } from './Menu'
@@ -9,7 +9,7 @@ import {getCertificats, getClesPrivees} from '../components/pkiHelper'
 import {splitPEMCerts} from '@dugrema/millegrilles.common/lib/forgecommon'
 
 import ListeSites from './ListeSites'
-import EditerSite from './EditerSite'
+import CDNConfig from './ContentDeliveryNetworkConfig'
 
 import './App.css'
 import $ from 'jquery'
@@ -38,6 +38,7 @@ export class ApplicationPublication extends React.Component {
     // signateurTransaction: '',
 
     siteId: '',  // Site en cours de modification
+    afficherSection: '',
     err: '',
   }
 
@@ -110,6 +111,15 @@ export class ApplicationPublication extends React.Component {
     this.setState({err: ''})
   }
 
+  setAfficherSection = event => {
+    const afficherSection = event.currentTarget?event.currentTarget.value:event
+    this.setState({afficherSection})
+  }
+
+  retour = _ => {
+    this.setState({afficherSection: ''})
+  }
+
   render() {
 
     const rootProps = {
@@ -126,17 +136,41 @@ export class ApplicationPublication extends React.Component {
     } else if(!this.state.websocketApp) {
       // 2. Connecter avec Socket.IO
       page = <p>Attente de connexion</p>
-    } else if(this.state.siteId) {
-      // Editer un site selectionne
-      page = <EditerSite rootProps={rootProps}
-                         siteId={this.state.siteId}
-                         retour={this.setSiteId} />
     } else {
-      // Afficher la liste des sites
-      page = <ListeSites rootProps={rootProps}
-                         setSiteId={this.setSiteId}
-                         creerSite={this.creerSite} />
+
+      var ElementPage = null
+      switch(this.state.afficherSection) {
+        case 'cdnConfig':
+          ElementPage = CDNConfig; break
+        case 'listeSites':
+          ElementPage = ListeSites; break
+        default:
+          ElementPage = ChoisirSection
+      }
+
+      page = <ElementPage rootProps={rootProps}
+                          setAfficherSection={this.setAfficherSection}
+                          retour={this.retour} />
     }
+
+    // if(this.state.afficherSection === 'cdnConfig') {
+    //   // Editer un site selectionne
+    //   page = <CDNConfig rootProps={rootProps}
+    //                     siteId={this.state.siteId}
+    //                     retour={this.retour} />
+    // } else if(this.state.afficherSection === 'editerSite') {
+    //   // Editer un site selectionne
+    //   page = <EditerSite rootProps={rootProps}
+    //                      siteId={this.state.siteId}
+    //                      retour={this.retour} />
+    // } else if(this.state.afficherSection === 'listeSites') {
+    //   // Afficher la liste des sites
+    //   page = <ListeSites rootProps={rootProps}
+    //                      setSiteId={this.setSiteId}
+    //                      creerSite={this.creerSite} />
+    // } else {
+    //
+    // }
 
     return (
       <>
@@ -146,6 +180,22 @@ export class ApplicationPublication extends React.Component {
     )
   }
 
+}
+
+function ChoisirSection(props) {
+  return (
+    <>
+      <h2>Publication</h2>
+
+      <p>Choisir une section</p>
+
+      <Nav onSelect={props.setAfficherSection}>
+        <Nav.Link eventKey="listeSites">Sites</Nav.Link>
+        <Nav.Link eventKey="cdnConfig">Destinations Content Delivery Network</Nav.Link>
+      </Nav>
+
+    </>
+  )
 }
 
 function AlertErreur(props) {

@@ -36,6 +36,10 @@
   font-family: "Tahoma", sans-serif;
 }
 
+.layout-contenu {
+  padding-top: 56px;
+}
+
 @media screen and (min-width: 768px) {
   .millegrille-footer {
     padding-top: 4em;

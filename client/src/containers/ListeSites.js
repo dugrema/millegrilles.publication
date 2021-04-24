@@ -1,6 +1,8 @@
 import React from 'react'
-import {Row, Col, Button} from 'react-bootstrap'
+import {Row, Col, Button, Nav} from 'react-bootstrap'
 import {proxy as comlinkProxy} from 'comlink'
+
+import EditerSite from './EditerSite'
 
 const routingKeysSite = [
   'transaction.Publication.*.majSite',
@@ -11,6 +13,7 @@ export default class ListeNoeuds extends React.Component {
 
   state = {
     sites: '',
+    siteId: '',
   }
 
   componentDidMount() {
@@ -44,13 +47,31 @@ export default class ListeNoeuds extends React.Component {
     }
   })
 
+  setSiteId = event => {
+    const value = event.currentTarget.value
+    this.setState({siteId: value})
+  }
+
   render() {
+
+    if(this.state.siteId) {
+      // Editer un site
+      return (
+        <EditerSite rootProps={this.props.rootProps}
+                    siteId={this.state.siteId}
+                    retour={this.setSiteId} />
+      )
+    }
+
+    // Afficher liste de sites
     return (
       <>
         <h1>Sites</h1>
 
+        <Nav.Link onClick={this.props.retour}>Retour</Nav.Link>
+
         <AfficherListeSites sites={this.state.sites}
-                            setSiteId={this.props.setSiteId} />
+                            setSiteId={this.setSiteId} />
 
         <Row>
           <Col>

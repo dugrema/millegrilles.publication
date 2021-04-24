@@ -172,7 +172,7 @@ export class Layout extends React.Component {
                   sousMenuApplication={this.props.sousMenuApplication}
                   rootProps={this.props.rootProps} />
 
-          <Container>
+          <Container className="layout-contenu">
             {this.props.children}
           </Container>
 

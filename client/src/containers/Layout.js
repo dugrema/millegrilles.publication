@@ -52,7 +52,8 @@ function Entete(props) {
 
 function Contenu(props) {
   return (
-    <Container>
+    <Container className="layout-contenu">
+    Dada
       {props.page}
     </Container>
   )
