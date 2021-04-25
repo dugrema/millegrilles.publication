@@ -180,6 +180,17 @@ function AfficherCdnAwsS3(props) {
         </Form.Group>
       </Form.Row>
 
+      <Form.Row>
+        <Form.Group as={Col} controlId="accesPointUrl">
+          <Form.Label>URL d'acces aux ressources</Form.Label>
+          <Form.Control type="url"
+                        name="accesPointUrl"
+                        value={afficherChamp('accesPointUrl')}
+                        placeholder="Exemple : https://SITE.cloudfront.net/...path..."
+                        onChange={changerChamp} />
+        </Form.Group>
+      </Form.Row>
+
     </>
   )
 }
