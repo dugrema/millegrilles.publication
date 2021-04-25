@@ -15,10 +15,16 @@ export default function CDNConfig(props) {
   const majCdn = cdnMaj => {
     console.debug("CDNConfig.majCdn : %O", cdnMaj)
     // Met a jour un CDN dans la liste
-    const listeMaj = listeCdns.map(cdn=>{
-      if(cdn.cdn_id === cdnMaj.cdn_id) return cdnMaj
-      return cdn
-    })
+    var listeMaj = null
+    if(cdnMaj.supprime === true) {
+      // On enleve l'entree de la liste
+      listeMaj = listeCdns.filter(cdn=>cdn.cdn_id !== cdnMaj.cdn_id)
+    } else {
+      listeMaj = listeCdns.map(cdn=>{
+        if(cdn.cdn_id === cdnMaj.cdn_id) return cdnMaj
+        return cdn
+      })
+    }
     console.debug("Liste maj : %O", listeMaj)
     setListeCdns(listeMaj)
   }
@@ -145,6 +151,23 @@ function AfficherCdn(props) {
     }
   }
 
+  const supprimer = async event => {
+    try {
+      const transaction = {
+        cdn_id: cdn.cdn_id,
+      }
+      const reponse = await props.rootProps.connexionWorker.supprimerCdn(transaction)
+      console.debug("Reponse suppression : %O", reponse)
+
+      // Retirer le CDN de la liste en memoire, puis retour a la liste
+      props.retour()
+      props.majCdn({cdn_id: cdn.cdn_id, supprime: true})
+    } catch(err) {
+      resetAlerts()
+      setErreur(''+err)
+    }
+  }
+
   return (
     <>
       <h2>Configuration Content Delivery</h2>
@@ -190,6 +213,13 @@ function AfficherCdn(props) {
           <Button onClick={sauvegarder}>Sauvegarder</Button>
           <Button onClick={props.retour} variant="secondary">Fermer</Button>
         </div>
+
+        <Row className="row-padtop">
+          <Col>Supprimer le content delivery network (IRREVERSIBLE)</Col>
+          <Col>
+            <Button onClick={supprimer} variant="danger">Supprimer</Button>
+          </Col>
+        </Row>
       </Form>
     </>
   )

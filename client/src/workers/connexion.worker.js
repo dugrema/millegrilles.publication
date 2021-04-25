@@ -52,6 +52,9 @@ function majCdn(params) {
   return connexionClient.emitBlocking('publication/majCdn', params)
 }
 
+function supprimerCdn(transaction) {
+  return connexionClient.emitBlocking('publication/supprimerCdn', transaction, {domaine: 'Publication.supprimerCdn'})
+}
 
 comlinkExpose({
   ...connexionClient,
@@ -60,5 +63,5 @@ comlinkExpose({
   requeteSites, requeteSite, requetePosts, requeteNoeudsPublics,
   requeteCollectionsPubliques, requeteListeCdns, requeteCleSsh,
 
-  majSite, majPost, majCdn
+  majSite, majPost, majCdn, supprimerCdn
 })
