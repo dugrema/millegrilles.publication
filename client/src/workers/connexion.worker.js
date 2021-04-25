@@ -34,6 +34,10 @@ function requeteListeCdns() {
   return connexionClient.emitBlocking('publication/requeteListeCdns', {})
 }
 
+function requeteCleSsh() {
+  return connexionClient.emitBlocking('publication/requeteCleSsh', {})
+}
+
 // Commandes
 
 function majSite(transaction) {
@@ -54,7 +58,7 @@ comlinkExpose({
   connecter,  // Override de connexionClient.connecter
 
   requeteSites, requeteSite, requetePosts, requeteNoeudsPublics,
-  requeteCollectionsPubliques, requeteListeCdns,
+  requeteCollectionsPubliques, requeteListeCdns, requeteCleSsh,
 
   majSite, majPost, majCdn
 })
