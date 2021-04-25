@@ -204,17 +204,8 @@
       }
     },
     "menu": {
-      "Accueil": "Accueil",
-      "Noeuds": "Noeuds",
-      "Domaines": "Domaines",
-      "Favoris": "Favoris",
-      "AjouterNoeuds": "Ajouter",
-      "GererFavoris": "Gestion favoris",
-      "Principal": "Principal",
-      "Parametres": "Parametres",
-      "Backup": "Backup",
-      "Hebergement": "Hebergement",
-      "Pki": "Pki",
+      "Sites": "Sites",
+      "CDNConfig": "CDN",
       "changerLangue": "English"
     }
   }

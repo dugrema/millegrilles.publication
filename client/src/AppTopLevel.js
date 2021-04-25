@@ -13,6 +13,7 @@ import {setupWorkers, cleanupWorkers, preparerWorkersAvecCles} from './workers/w
 
 // import {ConnexionWebsocket} from '../containers/Authentification'
 import {ApplicationPublication} from './containers/App'
+import {Menu} from './containers/Menu'
 
 import './containers/App.css'
 import './containers/Layout.css'
@@ -56,11 +57,6 @@ export default class AppTopLevel extends React.Component {
     console.debug("Set sous-menu application")
     this.setState({sousMenuApplication})
   }
-
-  // setWebsocketApp = websocketApp => {
-  //   // Set la connexion Socket.IO. Par defaut, le mode est prive (lecture seule)
-  //   this.setState({websocketApp, modeProtege: false})
-  // }
 
   setConnexionSocketIo = connexionSocketIo => {
     this.setState({connexionSocketIo})
@@ -158,7 +154,7 @@ export class Layout extends React.Component {
 function Entete(props) {
   return (
     <Container>
-      <Menu changerPage={props.changerPage} sousMenuApplication={props.sousMenuApplication} rootProps={props.rootProps}/>
+      <Menu changerPage={props.changerPage} rootProps={props.rootProps}/>
     </Container>
   )
 }
@@ -186,31 +182,5 @@ function Footer(props) {
         <Col sm={2} className="footer-right">{qrCode}</Col>
       </Row>
     </Container>
-  )
-}
-
-function Menu(props) {
-
-  let boutonProtege
-  if(props.rootProps.modeProtege) {
-    boutonProtege = <i className="fa fa-lg fa-lock protege"/>
-  } else {
-    boutonProtege = <i className="fa fa-lg fa-unlock"/>
-  }
-
-  var menuItems = props.sousMenuApplication
-
-  return (
-    <Navbar collapseOnSelect expand="md" bg="info" variant="dark" fixed="top">
-      <Navbar.Brand href='/'><i className="fa fa-home"/></Navbar.Brand>
-      <Navbar.Toggle aria-controls="responsive-navbar-menu" />
-      <Navbar.Collapse id="responsive-navbar-menu">
-        {menuItems}
-        <Nav className="justify-content-end">
-          <Nav.Link onClick={props.rootProps.toggleProtege}>{boutonProtege}</Nav.Link>
-          <Nav.Link onClick={props.rootProps.changerLanguage}><Trans>menu.changerLangue</Trans></Nav.Link>
-        </Nav>
-      </Navbar.Collapse>
-    </Navbar>
   )
 }

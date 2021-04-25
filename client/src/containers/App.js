@@ -51,23 +51,6 @@ export class ApplicationPublication extends React.Component {
         this.setState({websocketApp: wsa})
       })
 
-    this.props.setSousMenuApplication(
-      <MenuItems
-        changerPage={this.changerPage}
-        websocketApp={wsa}
-        />
-    )
-
-    // new Promise(async (resolve, reject) => {
-    //   const certInfo = await getCertificats('proprietaire')
-    //   // console.debug("Cert info : %O", certInfo)
-    //   const fullchain = splitPEMCerts(certInfo.fullchain)
-    //   const clesPrivees = await getClesPrivees('proprietaire')
-    //   // console.debug("Certificat chargement signateur transaction\ncerts: %O\ncles: %O", fullchain, clesPrivees)
-    //   const signateurTransaction = new SignateurTransactionSubtle(fullchain, clesPrivees.signer)
-    //   this.setState({signateurTransaction})
-    // })
-
   }
 
   setInfoServeur = (info) => {
@@ -82,7 +65,8 @@ export class ApplicationPublication extends React.Component {
 
   changerPage = event => {
     // Retour page accueil
-    this.setState({siteId: ''})
+    var afficherSection = event.currentTarget?event.currentTarget.value:event
+    this.setState({afficherSection})
   }
 
   creerSite = async _ => {
