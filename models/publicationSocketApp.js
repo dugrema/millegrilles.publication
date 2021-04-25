@@ -117,7 +117,25 @@ async function soumettreTransaction(socket, transaction, domaineValide, cb) {
 }
 
 async function soumettreMajCdn(socket, params, cb) {
-  throw new Error("TO DO")
+  const transactionPublication = params.publication,
+        commandeMaitredescles = params.maitredescles
+
+  try {
+    const amqpdao = socket.amqpdao
+    if(commandeMaitredescles) {
+      const domaineAction = commandeMaitredescles['en-tete'].domaine
+      if(domaineAction !== 'commande.MaitreDesCles.sauvegarderCle') {
+        return cb({err: 'Commande maitre des cles a un mauvais domaine'})
+      }
+      const reponseMaitredescles = await amqpdao.transmettreCommande(domaineAction, commandeMaitredescles)
+      debug("Reponse maitredescles : %O", reponseMaitredescles)
+    }
+
+    await soumettreTransaction(socket, transactionPublication, 'Publication.majCdn', cb)
+  } catch(err) {
+    console.error("ERROR publicationSocketApp.soumettreMajCdn %O", err)
+    return cb({err: ''+err})
+  }
 }
 
 module.exports = {configurerEvenements}

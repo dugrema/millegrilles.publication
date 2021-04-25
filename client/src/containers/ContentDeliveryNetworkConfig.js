@@ -12,10 +12,24 @@ export default function CDNConfig(props) {
   // Configuration CDN
   const [cdnId, setCdnId] = useState('')
 
+  const majCdn = cdnMaj => {
+    console.debug("CDNConfig.majCdn : %O", cdnMaj)
+    // Met a jour un CDN dans la liste
+    const listeMaj = listeCdns.map(cdn=>{
+      if(cdn.cdn_id === cdnMaj.cdn_id) return cdnMaj
+      return cdn
+    })
+    console.debug("Liste maj : %O", listeMaj)
+    setListeCdns(listeMaj)
+  }
+
   if(cdnId) {
     console.debug("CDN Id choisi : %O", cdnId)
     const cdn = listeCdns.filter(item=>item.cdn_id===cdnId)[0]
-    return <AfficherCdn rootProps={props.rootProps} cdn={cdn} retour={_=>setCdnId('')} />
+    return <AfficherCdn rootProps={props.rootProps}
+                        cdn={cdn}
+                        majCdn={majCdn}
+                        retour={_=>setCdnId('')} />
   }
 
   return (
@@ -107,7 +121,8 @@ function AfficherCdn(props) {
 
   const sauvegarder = async event => {
     const params = await fctPreparerChangement(cdn, configuration)
-    await sauvegarderCdn(props.rootProps.connexionWorker, params, setConfiguration)
+    await sauvegarderCdn(props.rootProps.chiffrageWorker, props.rootProps.connexionWorker, params, props.majCdn)
+    setConfiguration({})  // Reset configuration suite a la mise a jour
   }
 
   return (
@@ -337,6 +352,7 @@ function preparerParamsChangement(cdn, configuration) {
   delete configurationMaj.description
   delete configurationMaj.active
 
+  // Detection de changements
   const publication = {}
   if(cdn.active !== active) publication.active = active
   if(configuration.description) publication.description = configuration.description
@@ -344,7 +360,16 @@ function preparerParamsChangement(cdn, configuration) {
     publication.configuration = configurationMaj
   }
 
-  return {publication}
+  // Retourner publication si changements
+  console.debug("Changements detectes pour transaction publication : %O", publication)
+  if(Object.keys(publication).length > 0) {
+    // Toujours ajouter le type de cdn (immuable)
+    if(cdn.cdn_id) publication.cdn_id = cdn.cdn_id
+    publication.type_cdn = cdn.type_cdn
+    return {publication}
+  }
+
+  return {}
 }
 
 async function preparerParamsChangementAwsS3(cdn, configuration) {
@@ -359,6 +384,20 @@ async function preparerParamsChangementAwsS3(cdn, configuration) {
   return params
 }
 
-async function sauvegarderCdn(connexionWorker, params, setConfiguration) {
+async function sauvegarderCdn(chiffrageWorker, connexionWorker, params, majCdn) {
   console.debug("Sauvegarder changements : %O", params)
+
+  // Signer les messages
+  if(params.publication) {
+    params.publication = await chiffrageWorker.formatterMessage(
+      params.publication, 'Publication.majCdn', {attacherCertificat: true})
+  }
+  if(params.maitredescles) {
+    params.maitredescles = await chiffrageWorker.formatterMessage(
+      params.maitredescles, 'commande.MaitreDesCles.sauvegarderCle', {attacherCertificat: true})
+  }
+
+  const reponse = await connexionWorker.majCdn(params)
+  console.debug("Reponse maj CDN : %O", reponse)
+  majCdn(reponse.cdn)
 }
