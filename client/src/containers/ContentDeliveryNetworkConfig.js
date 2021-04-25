@@ -86,7 +86,7 @@ function AfficherCdn(props) {
 
   const changerNombre = event => {
     var {name, value} = event.currentTarget
-    console.debug("Nombre %s=%s", name, value)
+    // console.debug("Nombre %s=%s", name, value)
     if(!isNaN(value) && value!=='') {
       value = Number(value)
     } else {
@@ -94,6 +94,11 @@ function AfficherCdn(props) {
       value = ''
     }
     setConfiguration({...configuration, [name]: value})
+  }
+
+  const changerActive = event => {
+    const active = configuration.active || (configuration.active===false?false:cdn.active)
+    setConfiguration({...configuration, active: !active})
   }
 
   const afficherChamp = nomChamp => {
@@ -110,9 +115,17 @@ function AfficherCdn(props) {
       <h2>Configuration Content Delivery</h2>
       <Form>
         <Form.Row>
-          <Form.Group as={Col} controlId="cdnId">
+          <Form.Group as={Col} lg={6} controlId="cdnId">
             <Form.Label>id</Form.Label>
             <div>{cdn.cdn_id}</div>
+          </Form.Group>
+          <Form.Group as={Col} lg={6} controlId="active">
+            <Form.Label>Active</Form.Label>
+            <Form.Check type="switch"
+                        id="active"
+                        name="active"
+                        checked={configuration.active || (configuration.active===false?false:cdn.active) || false}
+                        onChange={changerActive} />
           </Form.Group>
         </Form.Row>
         <Form.Row>
@@ -132,7 +145,7 @@ function AfficherCdn(props) {
                  afficherChamp={afficherChamp} />
 
         <div className="bouton-serie">
-          <Button onClick={sauvegarderCdn}>Sauvegarder</Button>
+          <Button onClick={sauvegarder}>Sauvegarder</Button>
           <Button onClick={props.retour} variant="secondary">Annuler</Button>
         </div>
       </Form>
@@ -158,6 +171,7 @@ function AfficherCdnAwsS3(props) {
           <Form.Control type="text"
                         name="credentialsAccessKeyId"
                         value={afficherChamp('credentialsAccessKeyId')}
+                        autoComplete="off"
                         onChange={changerChamp} />
         </Form.Group>
         <Form.Group as={Col} md={6} controlId="secretAccessKey">
@@ -165,6 +179,7 @@ function AfficherCdnAwsS3(props) {
           <Form.Control type="password"
                         name="secretAccessKey"
                         placeholder="Changer le mot de passe ici, laisser vide sinon"
+                        autoComplete="new-password"
                         value={configuration.secretAccessKey || ''}
                         onChange={changerChamp} />
         </Form.Group>
@@ -176,6 +191,7 @@ function AfficherCdnAwsS3(props) {
           <Form.Control type="text"
                         name="bucketName"
                         value={afficherChamp('bucketName')}
+                        autoComplete="off"
                         onChange={changerChamp} />
         </Form.Group>
         <Form.Group as={Col} md={6} controlId="bucketRegion">
@@ -183,6 +199,7 @@ function AfficherCdnAwsS3(props) {
           <Form.Control type="text"
                         name="bucketRegion"
                         value={afficherChamp('bucketRegion')}
+                        autoComplete="off"
                         onChange={changerChamp} />
         </Form.Group>
       </Form.Row>
@@ -193,6 +210,7 @@ function AfficherCdnAwsS3(props) {
           <Form.Control type="text"
                         name="bucketDirfichier"
                         value={afficherChamp('bucketDirfichier')}
+                        autoComplete="off"
                         onChange={changerChamp} />
         </Form.Group>
       </Form.Row>
@@ -203,6 +221,7 @@ function AfficherCdnAwsS3(props) {
           <Form.Control type="url"
                         name="accesPointUrl"
                         value={afficherChamp('accesPointUrl')}
+                        autoComplete="off"
                         placeholder="Exemple : https://SITE.cloudfront.net/...path..."
                         onChange={changerChamp} />
         </Form.Group>
@@ -238,6 +257,7 @@ function AfficherCdnSftp(props) {
           <Form.Control type="number"
                         name="port"
                         value={afficherChamp('port')}
+                        min="1" max="65535"
                         onChange={changerNombre} />
         </Form.Group>
         <Form.Group as={Col} controlId="username">
@@ -307,18 +327,24 @@ async function chargerCleSftp(connexionWorker, setCleSsh) {
 }
 
 function preparerParamsChangement(cdn, configuration) {
+  console.debug("preparerParamsChangement %O\n", cdn, configuration)
+
   // Copier configuration
   const configurationMaj = {...configuration}
 
   // Extraire description, active
-  const description = configuration.description,
-        active = configuration.active?true:false
+  const active = configuration.active?true:false
   delete configurationMaj.description
   delete configurationMaj.active
 
-  return {
-    publication: {description, active, configuration: configurationMaj}
+  const publication = {}
+  if(cdn.active !== active) publication.active = active
+  if(configuration.description) publication.description = configuration.description
+  if(Object.keys(configurationMaj).length > 0) {
+    publication.configuration = configurationMaj
   }
+
+  return {publication}
 }
 
 async function preparerParamsChangementAwsS3(cdn, configuration) {
@@ -334,5 +360,5 @@ async function preparerParamsChangementAwsS3(cdn, configuration) {
 }
 
 async function sauvegarderCdn(connexionWorker, params, setConfiguration) {
-
+  console.debug("Sauvegarder changements : %O", params)
 }
