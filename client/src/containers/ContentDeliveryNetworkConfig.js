@@ -129,12 +129,13 @@ function AfficherCdn(props) {
   }
 
   const sauvegarder = async event => {
+    const {chiffrageWorker, connexionWorker} = props.rootProps
     try {
-      const params = await fctPreparerChangement(cdn, configuration)
+      const params = await fctPreparerChangement(chiffrageWorker, connexionWorker, cdn, configuration)
       if(!params) {
         return setErreur('Aucun changement detecte')
       }
-      await sauvegarderCdn(props.rootProps.chiffrageWorker, props.rootProps.connexionWorker, params, props.majCdn)
+      await sauvegarderCdn(chiffrageWorker, connexionWorker, params, props.majCdn)
       setConfiguration({})  // Reset configuration suite a la mise a jour
       resetAlerts()
       setConfirmation("Sauvegarde avec success")
@@ -367,7 +368,7 @@ async function chargerCleSftp(connexionWorker, setCleSsh) {
   setCleSsh(cleSsh)
 }
 
-function preparerParamsChangement(cdn, configuration) {
+async function preparerParamsChangement(chiffrageWorker, connexionWorker, cdn, configuration) {
   console.debug("preparerParamsChangement %O\n", cdn, configuration)
 
   // Copier configuration
@@ -402,14 +403,29 @@ function preparerParamsChangement(cdn, configuration) {
   return null
 }
 
-async function preparerParamsChangementAwsS3(cdn, configuration) {
-  const params = preparerParamsChangement(cdn, configuration)
+async function preparerParamsChangementAwsS3(chiffrageWorker, connexionWorker, cdn, configuration) {
+  const params = await preparerParamsChangement(chiffrageWorker, connexionWorker, cdn, configuration)
   if(configuration.secretAccessKey) {
     // Nouveau mot de passe.
     // Chiffrer et generer transaction maitre des cles
     // TODO
+    const certificatMaitredescles = await connexionWorker.getCertificatsMaitredescles()
+    console.debug("Certificat maitredescles", certificatMaitredescles)
+    const certPem = certificatMaitredescles.certificat.join('')
+    const identificateurs_document = {type: 'cdn', champ: 'awss3.secretAccessKey'}
+    const resultatChiffrage = await chiffrageWorker.chiffrerDocument(
+      configuration.secretAccessKey, 'Publication', certPem,
+      identificateurs_document, {nojson: true}
+    )
+    console.debug("Resultat chiffrage : %O", resultatChiffrage)
+    const {ciphertext, commandeMaitrecles} = resultatChiffrage
 
-    params.maitredescles = {texte: 'Une transaction'}
+    // Remplacer le champ secretAccessKey par secretAccessKey_chiffre
+    const configurationPublication = params.publication.configuration
+    configurationPublication.secretAccessKey_chiffre = ciphertext
+    delete configurationPublication.secretAccessKey
+
+    params.maitredescles = resultatChiffrage.commandeMaitrecles
   }
   return params
 }
@@ -422,10 +438,10 @@ async function sauvegarderCdn(chiffrageWorker, connexionWorker, params, majCdn) 
     params.publication = await chiffrageWorker.formatterMessage(
       params.publication, 'Publication.majCdn', {attacherCertificat: true})
   }
-  if(params.maitredescles) {
-    params.maitredescles = await chiffrageWorker.formatterMessage(
-      params.maitredescles, 'commande.MaitreDesCles.sauvegarderCle', {attacherCertificat: true})
-  }
+  // if(params.maitredescles) {
+  //   params.maitredescles = await chiffrageWorker.formatterMessage(
+  //     params.maitredescles, 'commande.MaitreDesCles.sauvegarderCle', {attacherCertificat: true})
+  // }
 
   const reponse = await connexionWorker.majCdn(params)
   console.debug("Reponse maj CDN : %O", reponse)

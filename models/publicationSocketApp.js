@@ -124,7 +124,7 @@ async function soumettreMajCdn(socket, params, cb) {
     const amqpdao = socket.amqpdao
     if(commandeMaitredescles) {
       const domaineAction = commandeMaitredescles['en-tete'].domaine
-      if(domaineAction !== 'commande.MaitreDesCles.sauvegarderCle') {
+      if(domaineAction !== 'MaitreDesCles.sauvegarderCle') {
         return cb({err: 'Commande maitre des cles a un mauvais domaine'})
       }
       const reponseMaitredescles = await amqpdao.transmettreCommande(domaineAction, commandeMaitredescles)
