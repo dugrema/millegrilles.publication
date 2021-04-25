@@ -43,6 +43,13 @@ label, .label {
   padding-right: 1em;
 }
 
+.bouton-serie {
+  text-align: center;
+}
+.bouton-serie button {
+  margin-right: 1em;
+}
+
 .optionrow {
   padding-bottom: 1em;
 }

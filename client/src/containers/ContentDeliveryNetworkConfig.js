@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import {Row, Col, Nav, Form} from 'react-bootstrap'
+import {Row, Col, Nav, Form, Button} from 'react-bootstrap'
 
 export default function CDNConfig(props) {
 
@@ -64,12 +64,15 @@ function AfficherCdn(props) {
 
   const [configuration, setConfiguration] = useState({})
 
-  var TypeCdn = null
+  var TypeCdn = null,
+      fctPreparerChangement = preparerParamsChangement
   switch(cdn.type_cdn) {
     case 'ipfs':
       TypeCdn = AfficherCdnIpfs; break
     case 'awss3':
-      TypeCdn = AfficherCdnAwsS3; break
+      TypeCdn = AfficherCdnAwsS3;
+      fctPreparerChangement = preparerParamsChangementAwsS3  // Chiffrer secretAccessKey
+      break
     case 'sftp':
       TypeCdn = AfficherCdnSftp; break
     default:
@@ -97,12 +100,21 @@ function AfficherCdn(props) {
     return configuration[nomChamp] || (configuration[nomChamp]===''?'':cdn[nomChamp]) || ''
   }
 
+  const sauvegarder = async event => {
+    const params = await fctPreparerChangement(cdn, configuration)
+    await sauvegarderCdn(props.rootProps.connexionWorker, params, setConfiguration)
+  }
+
   return (
     <>
       <h2>Configuration Content Delivery</h2>
-      <Nav.Link onClick={props.retour}>Retour</Nav.Link>
-      <p>CDN Id {cdn.cdn_id}</p>
       <Form>
+        <Form.Row>
+          <Form.Group as={Col} controlId="cdnId">
+            <Form.Label>id</Form.Label>
+            <div>{cdn.cdn_id}</div>
+          </Form.Group>
+        </Form.Row>
         <Form.Row>
           <Form.Group as={Col} controlId="description">
             <Form.Label>Description</Form.Label>
@@ -118,6 +130,11 @@ function AfficherCdn(props) {
                  changerChamp={changerChamp}
                  changerNombre={changerNombre}
                  afficherChamp={afficherChamp} />
+
+        <div className="bouton-serie">
+          <Button onClick={sauvegarderCdn}>Sauvegarder</Button>
+          <Button onClick={props.retour} variant="secondary">Annuler</Button>
+        </div>
       </Form>
     </>
   )
@@ -136,14 +153,14 @@ function AfficherCdnAwsS3(props) {
     <>
       <h3>Configuration AWS S3</h3>
       <Form.Row>
-        <Form.Group as={Col} controlId="credentialsAccessKeyId">
+        <Form.Group as={Col} md={6} controlId="credentialsAccessKeyId">
           <Form.Label>Credentials Access Key Id</Form.Label>
           <Form.Control type="text"
                         name="credentialsAccessKeyId"
                         value={afficherChamp('credentialsAccessKeyId')}
                         onChange={changerChamp} />
         </Form.Group>
-        <Form.Group as={Col} controlId="secretAccessKey">
+        <Form.Group as={Col} md={6} controlId="secretAccessKey">
           <Form.Label>Credentials Secret Key (mot de passe)</Form.Label>
           <Form.Control type="password"
                         name="secretAccessKey"
@@ -154,14 +171,14 @@ function AfficherCdnAwsS3(props) {
       </Form.Row>
 
       <Form.Row>
-      <Form.Group as={Col} controlId="bucketName">
-        <Form.Label>Nom Bucket</Form.Label>
-        <Form.Control type="text"
-                      name="bucketName"
-                      value={afficherChamp('bucketName')}
-                      onChange={changerChamp} />
-      </Form.Group>
-        <Form.Group as={Col} controlId="bucketRegion">
+        <Form.Group as={Col} md={6} controlId="bucketName">
+          <Form.Label>Nom Bucket</Form.Label>
+          <Form.Control type="text"
+                        name="bucketName"
+                        value={afficherChamp('bucketName')}
+                        onChange={changerChamp} />
+        </Form.Group>
+        <Form.Group as={Col} md={6} controlId="bucketRegion">
           <Form.Label>Region Amazon S3 bucket</Form.Label>
           <Form.Control type="text"
                         name="bucketRegion"
@@ -287,4 +304,35 @@ async function chargerCleSftp(connexionWorker, setCleSsh) {
   const cleSsh = await connexionWorker.requeteCleSsh()
   console.debug("Reponse cle ssh: %O", cleSsh)
   setCleSsh(cleSsh)
+}
+
+function preparerParamsChangement(cdn, configuration) {
+  // Copier configuration
+  const configurationMaj = {...configuration}
+
+  // Extraire description, active
+  const description = configuration.description,
+        active = configuration.active?true:false
+  delete configurationMaj.description
+  delete configurationMaj.active
+
+  return {
+    publication: {description, active, configuration: configurationMaj}
+  }
+}
+
+async function preparerParamsChangementAwsS3(cdn, configuration) {
+  const params = preparerParamsChangement(cdn, configuration)
+  if(configuration.secretAccessKey) {
+    // Nouveau mot de passe.
+    // Chiffrer et generer transaction maitre des cles
+    // TODO
+
+    params.maitredescles = {texte: 'Une transaction'}
+  }
+  return params
+}
+
+async function sauvegarderCdn(connexionWorker, params, setConfiguration) {
+
 }
