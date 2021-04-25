@@ -99,9 +99,9 @@ function AfficherCdn(props) {
 
   return (
     <>
+      <h2>Configuration Content Delivery</h2>
       <Nav.Link onClick={props.retour}>Retour</Nav.Link>
       <p>CDN Id {cdn.cdn_id}</p>
-      <p>Type : {cdn.type_cdn}</p>
       <Form>
         <Form.Row>
           <Form.Group as={Col} controlId="description">
@@ -130,8 +130,57 @@ function AfficherCdnIpfs(props) {
 }
 
 function AfficherCdnAwsS3(props) {
+  const {cdn, configuration, changerChamp, changerNombre, afficherChamp} = props
+
   return (
-    <p>AWS S3!</p>
+    <>
+      <h3>Configuration AWS S3</h3>
+      <Form.Row>
+        <Form.Group as={Col} controlId="credentialsAccessKeyId">
+          <Form.Label>Credentials Access Key Id</Form.Label>
+          <Form.Control type="text"
+                        name="credentialsAccessKeyId"
+                        value={afficherChamp('credentialsAccessKeyId')}
+                        onChange={changerChamp} />
+        </Form.Group>
+        <Form.Group as={Col} controlId="secretAccessKey">
+          <Form.Label>Credentials Secret Key (mot de passe)</Form.Label>
+          <Form.Control type="password"
+                        name="secretAccessKey"
+                        placeholder="Changer le mot de passe ici, laisser vide sinon"
+                        value={configuration.secretAccessKey || ''}
+                        onChange={changerChamp} />
+        </Form.Group>
+      </Form.Row>
+
+      <Form.Row>
+      <Form.Group as={Col} controlId="bucketName">
+        <Form.Label>Nom Bucket</Form.Label>
+        <Form.Control type="text"
+                      name="bucketName"
+                      value={afficherChamp('bucketName')}
+                      onChange={changerChamp} />
+      </Form.Group>
+        <Form.Group as={Col} controlId="bucketRegion">
+          <Form.Label>Region Amazon S3 bucket</Form.Label>
+          <Form.Control type="text"
+                        name="bucketRegion"
+                        value={afficherChamp('bucketRegion')}
+                        onChange={changerChamp} />
+        </Form.Group>
+      </Form.Row>
+
+      <Form.Row>
+        <Form.Group as={Col} controlId="bucketDirfichier">
+          <Form.Label>Repertoire remote</Form.Label>
+          <Form.Control type="text"
+                        name="bucketDirfichier"
+                        value={afficherChamp('bucketDirfichier')}
+                        onChange={changerChamp} />
+        </Form.Group>
+      </Form.Row>
+
+    </>
   )
 }
 
