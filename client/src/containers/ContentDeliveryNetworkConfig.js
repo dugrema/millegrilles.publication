@@ -241,6 +241,17 @@ function AfficherCdnSftp(props) {
         </Form.Group>
       </Form.Row>
 
+      <Form.Row>
+        <Form.Group as={Col} controlId="accesPointUrl">
+          <Form.Label>URL d'acces aux ressources</Form.Label>
+          <Form.Control type="url"
+                        name="accesPointUrl"
+                        value={afficherChamp('accesPointUrl')}
+                        placeholder="Exemple : https://SITE.monfournisseur.com/...path..."
+                        onChange={changerChamp} />
+        </Form.Group>
+      </Form.Row>
+
       <h3>Cle publique de connexion SSH</h3>
       <p>
         Installer (copier) la cle suivante dans .ssh/authorized_keys de
