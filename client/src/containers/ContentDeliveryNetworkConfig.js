@@ -19,6 +19,8 @@ export default function CDNConfig(props) {
     if(cdnMaj.supprime === true) {
       // On enleve l'entree de la liste
       listeMaj = listeCdns.filter(cdn=>cdn.cdn_id !== cdnMaj.cdn_id)
+    } else if(cdnMaj.nouveau) {
+      listeMaj = [...listeCdns, cdnMaj]
     } else {
       listeMaj = listeCdns.map(cdn=>{
         if(cdn.cdn_id === cdnMaj.cdn_id) return cdnMaj
@@ -27,12 +29,21 @@ export default function CDNConfig(props) {
     }
     console.debug("Liste maj : %O", listeMaj)
     setListeCdns(listeMaj)
+    if(cdnMaj.nouveau) setCdnId(cdnMaj.cdn_id)  // Utilise pour nouveau CDN
   }
 
   if(cdnId) {
     console.debug("CDN Id choisi : %O", cdnId)
-    const cdn = listeCdns.filter(item=>item.cdn_id===cdnId)[0]
+    var cdn = null
+    if(cdnId === true) {
+      // Nouveau CDN
+      cdn = {active: true}
+    } else {
+      cdn = listeCdns.filter(item=>item.cdn_id===cdnId)[0]
+    }
+
     return <AfficherCdn rootProps={props.rootProps}
+                        cdnId={cdnId}
                         cdn={cdn}
                         majCdn={majCdn}
                         retour={_=>setCdnId('')} />
@@ -45,6 +56,7 @@ export default function CDNConfig(props) {
 
       <AfficherListe rootProps={props.rootProps}
                      setCdnId={event=>{setCdnId(event.currentTarget.value)}}
+                     setNouveauCdn={event=>{setCdnId(true)}}
                      listeCdns={listeCdns} />
     </>
   )
@@ -58,6 +70,8 @@ function AfficherListe(props) {
   return (
     <>
       <h3>Liste des configuration existantes</h3>
+
+      <Button onClick={props.setNouveauCdn}>Ajouter</Button>
 
       {
         props.listeCdns.map(cdn=>{return(
@@ -105,6 +119,7 @@ function AfficherCdn(props) {
 
   const changerChamp = event => {
     const {name, value} = event.currentTarget
+    // console.debug("Changer champ %s = %s", name, value)
     setConfiguration({...configuration, [name]: value})
   }
 
@@ -114,7 +129,7 @@ function AfficherCdn(props) {
     if(!isNaN(value) && value!=='') {
       value = Number(value)
     } else {
-      console.debug("Nombre value vide")
+      // console.debug("Nombre value vide")
       value = ''
     }
     setConfiguration({...configuration, [name]: value})
@@ -136,12 +151,22 @@ function AfficherCdn(props) {
 
   const sauvegarder = async event => {
     const {chiffrageWorker, connexionWorker} = props.rootProps
+
+    // Validation
+    // Si nouveau CDN, s'assurer que le type est selectionne
+    const nouveau = props.cdnId === true
+    if(nouveau && !configuration.type_cdn) {
+      return setErreur("Il faut saisir le type de CDN")
+    }
+    // console.debug("SAUVEGARDER : %O, %O", props.cdn, configuration)
+
+
     try {
       const params = await fctPreparerChangement(chiffrageWorker, connexionWorker, cdn, configuration)
       if(!params) {
         return setErreur('Aucun changement detecte')
       }
-      await sauvegarderCdn(chiffrageWorker, connexionWorker, params, props.majCdn)
+      await sauvegarderCdn(chiffrageWorker, connexionWorker, params, props.majCdn, {nouveau})
       setConfiguration({})  // Reset configuration suite a la mise a jour
       resetAlerts()
       setConfirmation("Sauvegarde avec success")
@@ -186,6 +211,11 @@ function AfficherCdn(props) {
                         onChange={changerActive} />
           </Form.Group>
         </Form.Row>
+
+        <SelectionTypeCdn show={cdn.cdn_id?false:true}
+                          changerTypeCdn={changerChamp}
+                          value={configuration.type_cdn || ''}/>
+
         <Form.Row>
           <Form.Group as={Col} controlId="description">
             <Form.Label>Description</Form.Label>
@@ -209,19 +239,34 @@ function AfficherCdn(props) {
           {erreur}
         </Alert>
 
+        <Row className="row-padtop">
+          <Col lg={2}>
+            <Button onClick={supprimer} variant="danger">Supprimer</Button>
+          </Col>
+          <Col lg={10}>Supprimer le content delivery network (IRREVERSIBLE)</Col>
+        </Row>
+
         <div className="bouton-serie">
           <Button onClick={sauvegarder}>Sauvegarder</Button>
           <Button onClick={props.retour} variant="secondary">Fermer</Button>
         </div>
-
-        <Row className="row-padtop">
-          <Col>Supprimer le content delivery network (IRREVERSIBLE)</Col>
-          <Col>
-            <Button onClick={supprimer} variant="danger">Supprimer</Button>
-          </Col>
-        </Row>
       </Form>
     </>
+  )
+}
+
+function SelectionTypeCdn(props) {
+  if(!props.show) return ''
+  return (
+    <Form.Group controlId="exampleForm.ControlSelect1">
+      <Form.Label>Selectionner le mode de publication vers le CDN</Form.Label>
+      <Form.Control as="select" name="type_cdn" onChange={props.changerTypeCdn} value={props.value}>
+        <option>Choisir un mode</option>
+        <option value='sftp'>SFTP</option>
+        <option value='ipfs'>IPFS</option>
+        <option value='awss3'>Amazon Web Services S3</option>
+      </Form.Control>
+    </Form.Group>
   )
 }
 
@@ -406,6 +451,10 @@ async function preparerParamsChangement(chiffrageWorker, connexionWorker, cdn, c
   delete configurationMaj.description
   delete configurationMaj.active
 
+  // Extraire type cdn pour nouvel enregistrement
+  const type_cdn = configuration.type_cdn || cdn.type_cdn
+  delete configurationMaj.type_cdn
+
   // Extraire description, active
   var active = configuration.active
   if(active === undefined) {
@@ -425,7 +474,7 @@ async function preparerParamsChangement(chiffrageWorker, connexionWorker, cdn, c
   if(Object.keys(publication).length > 0) {
     // Toujours ajouter le type de cdn (immuable)
     if(cdn.cdn_id) publication.cdn_id = cdn.cdn_id
-    publication.type_cdn = cdn.type_cdn
+    publication.type_cdn = type_cdn
     publication.active = active
     return {publication}
   }
@@ -460,7 +509,8 @@ async function preparerParamsChangementAwsS3(chiffrageWorker, connexionWorker, c
   return params
 }
 
-async function sauvegarderCdn(chiffrageWorker, connexionWorker, params, majCdn) {
+async function sauvegarderCdn(chiffrageWorker, connexionWorker, params, majCdn, opts) {
+  opts = opts || {}
   console.debug("Sauvegarder changements : %O", params)
 
   // Signer les messages
@@ -475,5 +525,9 @@ async function sauvegarderCdn(chiffrageWorker, connexionWorker, params, majCdn) 
 
   const reponse = await connexionWorker.majCdn(params)
   console.debug("Reponse maj CDN : %O", reponse)
-  majCdn(reponse.cdn)
+
+  var reponseCdn = reponse.cdn
+  if(opts.nouveau) reponseCdn.nouveau = true
+
+  majCdn(reponseCdn)
 }
