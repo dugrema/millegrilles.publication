@@ -7,7 +7,6 @@ export default class InfoSite extends React.Component {
     // Champs d'edition a l'ecran
     nom_site: '',
     languages: '',
-    noeuds_urls: '',
     titre: '',
 
     err: '',
@@ -184,10 +183,14 @@ export default class InfoSite extends React.Component {
   }
 
   render() {
-    var sectionDonnees = <ChargementEnCours />
-    if(this.props.site) {
-      sectionDonnees = (
-        <SectionDonnees changerChamp={this.changerChamp}
+    if(!this.props.site) return <ChargementEnCours />
+
+    return (
+      <>
+        <AlertErreur err={this.state.err} clearErreur={this.clearErreur} />
+        <AlertConfirmation confirmation={this.state.confirmation} clearConfirmation={this.clearConfirmation} />
+
+        <FormInfoSite   changerChamp={this.changerChamp}
                         changerChampMultilingue={this.changerChampMultilingue}
                         ajouterLanguage={this.ajouterLanguage}
                         supprimerLanguage={this.supprimerLanguage}
@@ -196,25 +199,9 @@ export default class InfoSite extends React.Component {
                         supprimerUrl={this.supprimerUrl}
                         {...this.props}
                         {...this.state} />
-      )
-    }
-
-    return (
-      <>
-        <h2>Identification</h2>
-
-        <AlertErreur err={this.state.err} clearErreur={this.clearErreur} />
-        <AlertConfirmation confirmation={this.state.confirmation} clearConfirmation={this.clearConfirmation} />
 
         <Row>
-          <Col md={3}>Identificateur unique</Col>
-          <Col md={9}>{this.props.siteId}</Col>
-        </Row>
-
-        {sectionDonnees}
-
-        <Row>
-          <Col>
+          <Col className="row-padtop bouton-serie">
             <Button onClick={this.sauvegarder}
                     disabled={!this.props.rootProps.modeProtege}>
               Sauvegarder
@@ -235,12 +222,6 @@ function ChargementEnCours(props) {
   return <p>Chargement en cours</p>
 }
 
-function SectionDonnees(props) {
-  return (
-    <FormInfoSite {...props}/>
-  )
-}
-
 function FormInfoSite(props) {
 
   var nomSite = props.nom_site
@@ -251,24 +232,24 @@ function FormInfoSite(props) {
   return (
     <Form>
 
-      <InputGroup className="mb-3">
-        <InputGroup.Prepend>
-          <InputGroup.Text>Nom site</InputGroup.Text>
-        </InputGroup.Prepend>
-        <FormControl name="nom_site" value={nomSite} onChange={props.changerChamp}/>
-      </InputGroup>
+      <Form.Group>
+        <Form.Label md={3}>Identificateur unique</Form.Label>
+        <div>{props.siteId}</div>
+      </Form.Group>
+
+      <Form.Group>
+        <Form.Label htmlFor='nom_site'>Nom site</Form.Label>
+        <Form.Control name='nom_site' id='nom_site'
+                      value={nomSite}
+                      onChange={props.changerChamp} />
+        <Form.Text className="text-muted">Reference interne, ce nom n'est pas affiche sur le site.</Form.Text>
+      </Form.Group>
 
       <Languages {...props} />
 
       <TitreSite languages={props.languages || props.site.languages}
                  titre={props.titre || props.site.titre}
                  changerChampMultilingue={props.changerChampMultilingue} />
-
-      <Noeuds noeuds_urls={props.noeuds_urls || props.site.noeuds_urls}
-              noeudsDisponibles={props.noeudsDisponibles}
-              ajouterNoeud={props.ajouterNoeud}
-              ajouterUrl={props.ajouterUrl}
-              supprimerUrl={props.supprimerUrl} />
 
     </Form>
   )
@@ -302,28 +283,31 @@ class Languages extends React.Component {
 
     return (
       <>
-        <h2>Languages</h2>
-
-        <p>Ajouter les languages sous format ISO 639-1 (fr=francais, en=anglais, es=espagnol)</p>
-
-        <p>La premiere langue dans la liste est celle par defaut pour le site.</p>
-
-        <Row>
-          <Col md={4}>
+        <Form.Row>
+          <Form.Group as={Col} md={5} lg={4}>
+            <Form.Label htmlFor="language">Languages</Form.Label>
             <InputGroup>
-              <InputGroup.Prepend>
-                <InputGroup.Text>Language</InputGroup.Text>
-              </InputGroup.Prepend>
-              <FormControl name="nouveauLanguage" value={this.state.nouveauLanguage} onChange={this.changerChamp}/>
+              <FormControl name="nouveauLanguage"
+                           value={this.state.nouveauLanguage}
+                           onChange={this.changerChamp} />
               <InputGroup.Append>
-                <Button variant="outline-secondary" onClick={this.ajouterLanguage} value={this.state.nouveauLanguage}>Ajouter</Button>
+                <Button variant="outline-secondary"
+                        onClick={this.ajouterLanguage}
+                        value={this.state.nouveauLanguage}>Ajouter</Button>
               </InputGroup.Append>
+              <Form.Text className="text-muted">
+                Ajouter les languages sous format ISO 639-1 (fr=francais, en=anglais, es=espagnol)
+              </Form.Text>
             </InputGroup>
+          </Form.Group>
+
+          <Col>
+            <Form.Label>Languages selectionnes</Form.Label>
+            <div>{renderedLanguages}</div>
           </Col>
-          <Col md={8}>
-            {renderedLanguages}
-          </Col>
-        </Row>
+
+        </Form.Row>
+
       </>
     )
   }
@@ -333,14 +317,12 @@ class Languages extends React.Component {
 function TitreSite(props) {
   return (
     <>
-      <h2>Titre</h2>
-
-      <p>Titre affiche sur le site.</p>
-
+      <Form.Label>Titre</Form.Label>
       <ChampInputMultilingue languages={props.languages}
                              name="titre"
                              values={props.titre}
                              changerChamp={props.changerChampMultilingue} />
+      <Form.Text className="text-muted">Titre affiche sur le site</Form.Text>
     </>
   )
 }

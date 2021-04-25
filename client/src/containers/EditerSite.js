@@ -95,18 +95,8 @@ function NavSections(props) {
         </Nav.Link>
       </Nav.Item>
       <Nav.Item>
-        <Nav.Link eventKey="AccueilSite">
-          Accueil
-        </Nav.Link>
-      </Nav.Item>
-      <Nav.Item>
         <Nav.Link eventKey="SectionsSite">
           Sections additionnelles
-        </Nav.Link>
-      </Nav.Item>
-      <Nav.Item>
-        <Nav.Link disabled={sectionsBlogs.length === 0} eventKey="SectionsBlogs">
-          Sections blogs
         </Nav.Link>
       </Nav.Item>
     </Nav>
