@@ -50,6 +50,11 @@ label, .label {
   margin-right: 1em;
 }
 
+button.btn.btn-link {
+  text-align: left;
+  padding: 0;
+}
+
 .optionrow {
   padding-bottom: 1em;
 }

@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import {Row, Col, Nav, Form, Button} from 'react-bootstrap'
+import {Row, Col, Nav, Form, Button, Alert} from 'react-bootstrap'
 
 export default function CDNConfig(props) {
 
@@ -38,7 +38,7 @@ export default function CDNConfig(props) {
       <Nav.Link onClick={props.retour}>Retour</Nav.Link>
 
       <AfficherListe rootProps={props.rootProps}
-                     setCdnId={setCdnId}
+                     setCdnId={event=>{setCdnId(event.currentTarget.value)}}
                      listeCdns={listeCdns} />
     </>
   )
@@ -53,22 +53,24 @@ function AfficherListe(props) {
     <>
       <h3>Liste des configuration existantes</h3>
 
-      <Nav onSelect={props.setCdnId}>
-        {
-          props.listeCdns.map(cdn=>{
-            return (
-              <Row key={cdn.cdn_id}>
-                <Col>
-                  <Nav.Link eventKey={cdn.cdn_id}>
-                    {cdn.description || cdn.cdn_id}
-                  </Nav.Link>
-                </Col>
-                <Col>{cdn.type_cdn}</Col>
-              </Row>
-            )
-          })
-        }
-      </Nav>
+      {
+        props.listeCdns.map(cdn=>{return(
+          <Row key={cdn.cdn_id}>
+            <Col lg={10}>
+              <Button variant="link" onClick={props.setCdnId} value={cdn.cdn_id}>
+                {cdn.description || cdn.cdn_id}
+              </Button>
+            </Col>
+            <Col lg={1}>
+              {cdn.type_cdn}
+            </Col>
+            <Col lg={1}>
+              {cdn.active?'Active':'Inactif'}
+            </Col>
+          </Row>
+        )})
+      }
+
     </>
   )
 }
@@ -77,6 +79,8 @@ function AfficherCdn(props) {
   const cdn = props.cdn
 
   const [configuration, setConfiguration] = useState({})
+  const [confirmation, setConfirmation] = useState('')
+  const [erreur, setErreur] = useState('')
 
   var TypeCdn = null,
       fctPreparerChangement = preparerParamsChangement
@@ -119,10 +123,25 @@ function AfficherCdn(props) {
     return configuration[nomChamp] || (configuration[nomChamp]===''?'':cdn[nomChamp]) || ''
   }
 
+  const resetAlerts = _ => {
+    setErreur('')
+    setConfirmation('')
+  }
+
   const sauvegarder = async event => {
-    const params = await fctPreparerChangement(cdn, configuration)
-    await sauvegarderCdn(props.rootProps.chiffrageWorker, props.rootProps.connexionWorker, params, props.majCdn)
-    setConfiguration({})  // Reset configuration suite a la mise a jour
+    try {
+      const params = await fctPreparerChangement(cdn, configuration)
+      if(!params) {
+        return setErreur('Aucun changement detecte')
+      }
+      await sauvegarderCdn(props.rootProps.chiffrageWorker, props.rootProps.connexionWorker, params, props.majCdn)
+      setConfiguration({})  // Reset configuration suite a la mise a jour
+      resetAlerts()
+      setConfirmation("Sauvegarde avec success")
+    } catch(err) {
+      resetAlerts()
+      setErreur(''+err)
+    }
   }
 
   return (
@@ -159,9 +178,16 @@ function AfficherCdn(props) {
                  changerNombre={changerNombre}
                  afficherChamp={afficherChamp} />
 
+        <Alert variant="success" show={confirmation?true:false} onClose={resetAlerts} dismissible>
+          {confirmation}
+        </Alert>
+        <Alert variant="danger" show={erreur?true:false} onClose={resetAlerts} dismissible>
+          {erreur}
+        </Alert>
+
         <div className="bouton-serie">
           <Button onClick={sauvegarder}>Sauvegarder</Button>
-          <Button onClick={props.retour} variant="secondary">Annuler</Button>
+          <Button onClick={props.retour} variant="secondary">Fermer</Button>
         </div>
       </Form>
     </>
@@ -346,11 +372,14 @@ function preparerParamsChangement(cdn, configuration) {
 
   // Copier configuration
   const configurationMaj = {...configuration}
-
-  // Extraire description, active
-  const active = configuration.active?true:false
   delete configurationMaj.description
   delete configurationMaj.active
+
+  // Extraire description, active
+  var active = configuration.active
+  if(active === undefined) {
+    active = cdn.active || false
+  }
 
   // Detection de changements
   const publication = {}
@@ -366,10 +395,11 @@ function preparerParamsChangement(cdn, configuration) {
     // Toujours ajouter le type de cdn (immuable)
     if(cdn.cdn_id) publication.cdn_id = cdn.cdn_id
     publication.type_cdn = cdn.type_cdn
+    publication.active = active
     return {publication}
   }
 
-  return {}
+  return null
 }
 
 async function preparerParamsChangementAwsS3(cdn, configuration) {
