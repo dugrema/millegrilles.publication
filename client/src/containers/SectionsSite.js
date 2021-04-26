@@ -9,6 +9,7 @@ export default class SectionsSite extends React.Component {
     sections: '',
 
     collectionsPubliques: '',
+    forums: '',
 
     err: '',
     confirmation: '',
@@ -22,6 +23,8 @@ export default class SectionsSite extends React.Component {
       console.debug("Collections publiques : %O", collections)
       this.setState({collectionsPubliques: collections})
     }).catch(err=>{this.setState({err: this.state.err + '\n' + err})})
+
+    chargerForums(wsa, forums=>this.setState({forums}))
   }
 
   ajouterSection = event => {
@@ -185,6 +188,7 @@ export default class SectionsSite extends React.Component {
                            toggleCheckbox={this.toggleCheckbox}
                            toggleListValue={this.toggleListValue}
                            collectionsPubliques={this.state.collectionsPubliques}
+                           forums={this.state.forums}
                            supprimerSection={this.supprimerSection}
                            changerPositionSection={this.changerPositionSection}
                            {...this.props} />
@@ -246,7 +250,7 @@ function AfficherSection(props) {
                     onClick={_=>{props.changerPositionSection(idxRow, idxRow-1)}}>
               <i className="fa fa-arrow-up"/>
             </Button>
-            <Button variant="secondary" disabled={idxRow===props.sections.length-1} 
+            <Button variant="secondary" disabled={idxRow===props.sections.length-1}
                     onClick={_=>{props.changerPositionSection(idxRow, idxRow+1)}}>
               <i className="fa fa-arrow-down"/>
             </Button>
@@ -279,7 +283,7 @@ function SectionFichiers(props) {
     collectionsPubliques = props.collectionsPubliques.map(item=>{
       return (
         <Form.Row key={item.uuid}>
-          <Form.Check id={"collections-" + item.uuid} key={item.uuid}
+          <Form.Check id={["collections-", idxRow, item.uuid].join('-')} key={item.uuid}
                       type="checkbox"
                       label={item.nom_collection}
                       name="collections"
@@ -334,82 +338,63 @@ function SectionVide(props) {
 
 function SectionForums(props) {
 
-  return <p>Forums</p>
+  const configuration = props.configuration,
+        idxRow = props.idxRow
 
-  // const configuration = props.configuration,
-  //       idxRow = props.idxRow
-  //
-  // var entete = configuration.entete
-  // if(!entete) {
-  //   // Initialiser entete
-  //   entete = {}
-  //   props.languages.forEach(langue=>{
-  //     entete[langue] = ''
-  //   })
-  // }
-  //
-  // var tousForumesInclus = configuration.touts_forums?true:false
-  // var forumsSelectionnes = configuration.forums || []
-  //
-  // var collectionsPubliques = ''
-  // if(!toutesCollectionsInclues && props.collectionsPubliques) {
-  //   collectionsPubliques = props.collectionsPubliques.map(item=>{
-  //     return (
-  //       <Row key={item.uuid}>
-  //         <Col lg={1}></Col>
-  //         <Col>
-  //           <Form.Check id={"collections-" + item.uuid} key={item.uuid}
-  //                       type="checkbox"
-  //                       label={item.nom_collection}
-  //                       name="collections"
-  //                       value={item.uuid}
-  //                       checked={collectionsSelectionnees.includes(item.uuid)}
-  //                       data-row={idxRow}
-  //                       onChange={props.toggleListValue} />
-  //         </Col>
-  //       </Row>
-  //     )
-  //   })
-  //   collectionsPubliques.unshift(
-  //     <Row key="instructions">
-  //       <Col>
-  //         Choisir collections individuellement
-  //       </Col>
-  //     </Row>
-  //   )
-  // }
-  //
-  // return (
-  //   <div className="section-site">
-  //     <h2>
-  //       Fichiers
-  //       <Button onClick={props.supprimerSection}
-  //               className="bouton-supprimer-droite"
-  //               value={idxRow}
-  //               variant="secondary"
-  //               disabled={!props.rootProps.modeProtege}>X</Button>
-  //     </h2>
-  //
-  //     <h3>Entete</h3>
-  //     <ChampInputMultilingue languages={props.languages}
-  //                            name="entete"
-  //                            values={entete}
-  //                            idxRow={idxRow}
-  //                            changerChamp={props.changerChampMultilingue} />
-  //
-  //     <h3>Collections inclues</h3>
-  //     <Form.Check id={"collections-toutes-" + idxRow}
-  //                 type="checkbox"
-  //                 label="Toutes les collections publiques"
-  //                 name="toutes_collections"
-  //                 checked={toutesCollectionsInclues}
-  //                 data-row={idxRow}
-  //                 onChange={props.toggleCheckbox} />
-  //
-  //     {collectionsPubliques}
-  //
-  //   </div>
-  // )
+  var tousForumsInclus = configuration.tous_forums?true:false
+  var forumsSelectionnes = configuration.listeForums || []
+
+  var forumsDisponibles = ''
+  if(!tousForumsInclus && props.forums) {
+    forumsDisponibles = props.forums.map(item=>{
+      return (
+        <Form.Row key={item.forum_id}>
+          <Form.Check id={"forum-" + item.forum_id} key={item.forum_id}
+                      type="checkbox"
+                      label={item.nom}
+                      name="listeForums"
+                      value={item.forum_id}
+                      checked={forumsSelectionnes.includes(item.forum_id)}
+                      data-row={idxRow}
+                      onChange={props.toggleListValue} />
+        </Form.Row>
+      )
+    })
+  }
+
+  return (
+    <>
+      <Form.Row>
+        <Form.Group as={Col} md={6} lg={5}>
+          <Form.Label>Choix des forums</Form.Label>
+          <Form.Check id={"forums-" + idxRow + "-toutes"}
+                      type="radio"
+                      label={"Tous les forums publics" + (props.site.securite==='2.prive'?' et prives':'')}
+                      name="tous_forums"
+                      checked={tousForumsInclus}
+                      data-row={idxRow}
+                      onChange={props.toggleCheckbox} />
+          <Form.Check id={"forums-" + idxRow + '-selectionnes'}
+                      type="radio"
+                      label="Forums selectionnes uniquement"
+                      name="tous_forums"
+                      checked={!tousForumsInclus}
+                      data-row={idxRow}
+                      onChange={props.toggleCheckbox} />
+        </Form.Group>
+
+        {!tousForumsInclus?
+          <Form.Group as={Col} md={6} lg={7}>
+            <Form.Label>Selectionner forums a publier</Form.Label>
+            {forumsDisponibles}
+          </Form.Group>
+          :''
+        }
+
+      </Form.Row>
+
+    </>
+  )
 
 }
 
@@ -429,4 +414,10 @@ function AlertConfirmation(props) {
       <pre>{'' + props.confirmation}</pre>
     </Alert>
   )
+}
+
+async function chargerForums(wsa, setForums) {
+  const forums = await wsa.requeteForums()
+  setForums(forums)
+  console.debug("Forums charges : %O", forums)
 }

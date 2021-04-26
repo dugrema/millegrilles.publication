@@ -11,6 +11,7 @@ function configurerEvenements(socket) {
       {eventName: 'publication/requeteCollectionsPubliques', callback: (params, cb) => {requeteCollectionsPubliques(socket, params, cb)}},
       {eventName: 'publication/requeteListeCdns', callback: (params, cb) => {requeteListeCdns(socket, params, cb)}},
       {eventName: 'publication/requeteCleSsh', callback: (params, cb) => {requeteCleSsh(socket, params, cb)}},
+      {eventName: 'publication/requeteForums', callback: (params, cb) => {requeteForums(socket, params, cb)}},
     ],
     listenersProteges: [
       {eventName: 'publication/majSite', callback: (transaction, cb) => {
@@ -89,6 +90,10 @@ function requeteListeCdns(socket, params, cb) {
 
 function requeteCleSsh(socket, params, cb) {
   executerRequete('fichiers.getPublicKeySsh', socket, params, cb)
+}
+
+function requeteForums(socket, params, cb) {
+  executerRequete('Forum.getForums', socket, params, cb)
 }
 
 async function executerRequete(domaineAction, socket, params, cb) {

@@ -38,6 +38,10 @@ function requeteCleSsh() {
   return connexionClient.emitBlocking('publication/requeteCleSsh', {})
 }
 
+function requeteForums() {
+  return connexionClient.emitBlocking('publication/requeteForums', {})
+}
+
 // Commandes
 
 function majSite(transaction) {
@@ -62,6 +66,7 @@ comlinkExpose({
 
   requeteSites, requeteSite, requetePosts, requeteNoeudsPublics,
   requeteCollectionsPubliques, requeteListeCdns, requeteCleSsh,
+  requeteForums,
 
-  majSite, majPost, majCdn, supprimerCdn
+  majSite, majPost, majCdn, supprimerCdn,
 })
