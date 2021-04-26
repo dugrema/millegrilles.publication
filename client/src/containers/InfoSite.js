@@ -32,7 +32,7 @@ export default class InfoSite extends React.Component {
 
   changerChamp = event => {
     const {name, value} = event.currentTarget
-    console.debug("Champ %s=%s", name, value)
+    // console.debug("Champ %s=%s", name, value)
     this.setState({[name]: value})
   }
 

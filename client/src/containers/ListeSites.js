@@ -9,7 +9,7 @@ const routingKeysSite = [
   'transaction.Publication.majSite',
 ]
 
-export default class ListeNoeuds extends React.Component {
+export default class ListeSites extends React.Component {
 
   state = {
     sites: '',
@@ -52,6 +52,30 @@ export default class ListeNoeuds extends React.Component {
     this.setState({siteId: value})
   }
 
+  creerSite = async _ => {
+    console.debug("Creer nouveau site")
+    // const domaineAction = 'Publication.majSite'
+    // var transaction = {}
+
+    // Signer transaction, soumettre
+    //const signateurTransaction = this.state.signateurTransaction
+    // const webWorker = this.props.rootProps.chiffrageWorker
+    // //await signateurTransaction.preparerTransaction(transaction, domaineAction)
+    // transaction = await webWorker.formatterMessage(transaction, domaineAction)
+    // const siteId = transaction['en-tete']['uuid_transaction']
+    // console.debug("Nouveau site, Transaction a soumettre : %O", transaction)
+
+    const wsa = this.props.rootProps.connexionWorker
+    try {
+      const reponse = await wsa.majSite({})
+      console.debug("Reponse nouveau site : %O", reponse)
+      this.setState({siteId: reponse.siteId})
+    } catch (err) {
+      console.error("Erreur creer site : %O", err)
+      this.setState({err})
+    }
+  }
+
   render() {
 
     if(this.state.siteId) {
@@ -76,7 +100,7 @@ export default class ListeNoeuds extends React.Component {
         <Row>
           <Col>
             <Button variant="secondary"
-                    onClick={this.props.creerSite}
+                    onClick={this.creerSite}
                     disabled={!this.props.rootProps.modeProtege}>Nouveau site</Button>
           </Col>
         </Row>

@@ -35,9 +35,7 @@ export class ApplicationPublication extends React.Component {
     hebergement: false,
 
     websocketApp: '',
-    // signateurTransaction: '',
 
-    siteId: '',  // Site en cours de modification
     afficherSection: '',
     err: '',
   }
@@ -57,38 +55,10 @@ export class ApplicationPublication extends React.Component {
     this.setState(info)
   }
 
-  setSiteId = siteId => {
-    if(siteId.currentTarget) siteId = siteId.currentTarget.value  // Mapper value bouton
-    // console.debug("Set site id : %O", siteId)
-    this.setState({siteId})
-  }
-
   changerPage = event => {
     // Retour page accueil
     var afficherSection = event.currentTarget?event.currentTarget.value:event
     this.setState({afficherSection})
-  }
-
-  creerSite = async _ => {
-    console.debug("Creer nouveau site")
-    const domaineAction = 'Publication.majSite'
-    var transaction = {}
-
-    // Signer transaction, soumettre
-    //const signateurTransaction = this.state.signateurTransaction
-    const webWorker = this.props.rootProps.chiffrageWorker
-    //await signateurTransaction.preparerTransaction(transaction, domaineAction)
-    transaction = await webWorker.formatterMessage(transaction, domaineAction)
-    const siteId = transaction['en-tete']['uuid_transaction']
-    console.debug("Nouveau site %s, Transaction a soumettre : %O", siteId, transaction)
-
-    const wsa = this.state.websocketApp
-    try {
-      const reponse = await wsa.majSite(transaction)
-      this.setState({siteId})
-    } catch (err) {
-      this.setState({err})
-    }
   }
 
   clearErreur = _ => {

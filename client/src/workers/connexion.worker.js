@@ -45,7 +45,7 @@ function requeteForums() {
 // Commandes
 
 function majSite(transaction) {
-  return connexionClient.emitBlocking('publication/majSite', transaction)
+  return connexionClient.emitBlocking('publication/majSite', transaction, {domaine: 'Publication.majSite'})
 }
 
 function majPost(transaction) {
