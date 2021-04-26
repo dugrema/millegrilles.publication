@@ -343,10 +343,14 @@ function SectionForums(props) {
 
   var tousForumsInclus = configuration.tous_forums?true:false
   var forumsSelectionnes = configuration.listeForums || []
+  const niveauxSecurite = ['1.public']
+  if(props.site.securite==='2.prive') niveauxSecurite.push('2.prive')
 
   var forumsDisponibles = ''
   if(!tousForumsInclus && props.forums) {
-    forumsDisponibles = props.forums.map(item=>{
+    forumsDisponibles = props.forums
+      .filter(item=>niveauxSecurite.includes(item.securite))
+      .map(item=>{
       return (
         <Form.Row key={item.forum_id}>
           <Form.Check id={"forum-" + item.forum_id} key={item.forum_id}
