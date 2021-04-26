@@ -664,6 +664,9 @@ function ListeSocketio(props) {
 
         {listeSocketio.map((item, idx)=>(
           <InputGroup key={idx}>
+            <InputGroup.Prepend>
+               <InputGroup.Text>{idx+1}.</InputGroup.Text>
+            </InputGroup.Prepend>
             <Form.Control type='url'
                           name={''+idx}
                           value={item}
@@ -685,7 +688,8 @@ function ListeSocketio(props) {
             </InputGroup.Append>
           </InputGroup>
         ))}
-
+      </Form.Group>
+      <Form.Group>
         <InputGroup>
           <Form.Control type='url' value={socketioValeur} onChange={changeSocketioValeur} />
           <InputGroup.Append>
