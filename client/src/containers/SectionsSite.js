@@ -109,6 +109,14 @@ export default class SectionsSite extends React.Component {
     this.setState({sections}, _=>{console.debug("Status updated : %O", this.state)})
   }
 
+  changerPositionSection = (idx, nouvellePosition) => {
+    var sections = this.state.sections || this.props.site.sections || []
+    const section = sections[idx]
+    sections = sections.filter((item, idxSection)=>idxSection!==idx)
+    sections.splice(nouvellePosition, 0, section)
+    this.setState({sections})
+  }
+
   sauvegarder = async event => {
     if(this.state.sections) {
       console.debug("Sauvegarder : %O", this.state.sections)
@@ -147,39 +155,8 @@ export default class SectionsSite extends React.Component {
 
   render() {
 
-    var sections = this.state.sections || this.props.site.sections
+    var sections = this.state.sections || this.props.site.sections || []
     var sectionsRendered = null
-
-    if(sections) {
-      sectionsRendered = sections.map((section, idxRow)=>{
-        if(section.type === 'fichiers') {
-          return <SectionFichiers key={idxRow} idxRow={idxRow}
-                                  configuration={section}
-                                  changerChampMultilingue={this.changerChampMultilingue}
-                                  toggleCheckbox={this.toggleCheckbox}
-                                  toggleListValue={this.toggleListValue}
-                                  collectionsPubliques={this.state.collectionsPubliques}
-                                  supprimerSection={this.supprimerSection}
-                                  {...this.props} />
-        } else if(section.type === 'album') {
-          return <SectionAlbum key={idxRow} idxRow={idxRow}
-                               configuration={section}
-                               changerChampMultilingue={this.changerChampMultilingue}
-                               toggleCheckbox={this.toggleCheckbox}
-                               toggleListValue={this.toggleListValue}
-                               collectionsPubliques={this.state.collectionsPubliques}
-                               supprimerSection={this.supprimerSection}
-                               {...this.props}  />
-        } else if(section.type === 'blogposts') {
-          return <SectionBlogPosts key={idxRow} idxRow={idxRow}
-                                   configuration={section}
-                                   changerChampMultilingue={this.changerChampMultilingue}
-                                   supprimerSection={this.supprimerSection}
-                                   {...this.props} />
-        }
-        return <p>Type inconnu : {section.type}</p>
-      })
-    }
 
     return (
       <>
@@ -194,12 +171,24 @@ export default class SectionsSite extends React.Component {
             <ButtonGroup>
               <Button variant="secondary" onClick={this.ajouterSection} value="fichiers">Fichiers</Button>
               <Button variant="secondary" onClick={this.ajouterSection} value="album">Album</Button>
-              <Button variant="secondary" onClick={this.ajouterSection} value="blogposts">Blog Posts</Button>
+              <Button variant="secondary" onClick={this.ajouterSection} value="pages">Pages</Button>
+              <Button variant="secondary" onClick={this.ajouterSection} value="forums">Forums</Button>
             </ButtonGroup>
           </Col>
         </Row>
 
-        {sectionsRendered}
+        {sections.map((section, idxRow)=>
+          <AfficherSection key={idxRow} idxRow={idxRow}
+                           configuration={section}
+                           sections={sections}
+                           changerChampMultilingue={this.changerChampMultilingue}
+                           toggleCheckbox={this.toggleCheckbox}
+                           toggleListValue={this.toggleListValue}
+                           collectionsPubliques={this.state.collectionsPubliques}
+                           supprimerSection={this.supprimerSection}
+                           changerPositionSection={this.changerPositionSection}
+                           {...this.props} />
+        )}
 
         <Row>
           <Col>
@@ -213,20 +202,75 @@ export default class SectionsSite extends React.Component {
 
 }
 
+function AfficherSection(props) {
+  var TypeSection = null
+
+  switch(props.configuration.type) {
+    case 'fichiers': TypeSection = SectionFichiers; break
+    case 'album': TypeSection = SectionFichiers; break
+    case 'pages': TypeSection = SectionVide; break
+    case 'forums': TypeSection = SectionForums; break
+    default: TypeSection = TypeSectionInconnue
+  }
+
+  const idxRow = props.idxRow
+
+  var entete = props.configuration.entete
+  if(!entete) {
+    // Initialiser entete
+    entete = {}
+    props.languages.forEach(langue=>{
+      entete[langue] = ''
+    })
+  }
+
+  return (
+    <>
+      <h2>{idxRow+1}. Section {props.configuration.type}</h2>
+      <Form.Group>
+        <Form.Label>Titre affiche de la section</Form.Label>
+        <ChampInputMultilingue languages={props.languages}
+                               name="entete"
+                               values={entete}
+                               idxRow={idxRow}
+                               changerChamp={props.changerChampMultilingue} />
+      </Form.Group>
+
+      <TypeSection {...props} />
+
+      <Form.Group>
+        <Form.Label>Actions sur la section</Form.Label>
+        <Form.Row>
+          <ButtonGroup>
+            <Button variant="secondary" disabled={idxRow===0}
+                    onClick={_=>{props.changerPositionSection(idxRow, idxRow-1)}}>
+              <i className="fa fa-arrow-up"/>
+            </Button>
+            <Button variant="secondary" disabled={idxRow===props.sections.length-1} 
+                    onClick={_=>{props.changerPositionSection(idxRow, idxRow+1)}}>
+              <i className="fa fa-arrow-down"/>
+            </Button>
+          </ButtonGroup>
+          {' '}
+          <Button onClick={props.supprimerSection}
+                  value={idxRow}
+                  variant="danger"
+                  disabled={!props.rootProps.modeProtege}>Supprimer section fichiers</Button>
+        </Form.Row>
+      </Form.Group>
+    </>
+  )
+}
+
+function TypeSectionInconnue(props) {
+  return <p>Type section non geree</p>
+}
+
 function SectionFichiers(props) {
 
   const configuration = props.configuration,
         idxRow = props.idxRow
 
-  var entete = configuration.entete
-  if(!entete) {
-    // Initialiser entete
-    entete = {}
-    props.languages.forEach(langue=>{
-      entete[langue] = ''
-    })
-  }
-
   var toutesCollectionsInclues = configuration.toutes_collections?true:false
   var collectionsSelectionnees = configuration.collections || []
 
@@ -234,174 +278,139 @@ function SectionFichiers(props) {
   if(!toutesCollectionsInclues && props.collectionsPubliques) {
     collectionsPubliques = props.collectionsPubliques.map(item=>{
       return (
-        <Row key={item.uuid}>
-          <Col lg={1}></Col>
-          <Col>
-            <Form.Check id={"collections-" + item.uuid} key={item.uuid}
-                        type="checkbox"
-                        label={item.nom_collection}
-                        name="collections"
-                        value={item.uuid}
-                        checked={collectionsSelectionnees.includes(item.uuid)}
-                        data-row={idxRow}
-                        onChange={props.toggleListValue} />
-          </Col>
-        </Row>
+        <Form.Row key={item.uuid}>
+          <Form.Check id={"collections-" + item.uuid} key={item.uuid}
+                      type="checkbox"
+                      label={item.nom_collection}
+                      name="collections"
+                      value={item.uuid}
+                      checked={collectionsSelectionnees.includes(item.uuid)}
+                      data-row={idxRow}
+                      onChange={props.toggleListValue} />
+        </Form.Row>
       )
     })
-    collectionsPubliques.unshift(
-      <Row key="instructions">
-        <Col>
-          Choisir collections individuellement
-        </Col>
-      </Row>
-    )
   }
 
   return (
-    <div className="section-site">
-      <h2>
-        Fichiers
-        <Button onClick={props.supprimerSection}
-                className="bouton-supprimer-droite"
-                value={idxRow}
-                variant="secondary"
-                disabled={!props.rootProps.modeProtege}>X</Button>
-      </h2>
+    <>
+      <Form.Row>
+        <Form.Group as={Col} md={6} lg={5}>
+          <Form.Label>Choix des collections de fichiers</Form.Label>
+          <Form.Check id={"collections-" + idxRow + "-toutes"}
+                      type="radio"
+                      label={"Toutes les collections publiques" + (props.site.securite==='2.prive'?' et privees':'')}
+                      name="toutes_collections"
+                      checked={toutesCollectionsInclues}
+                      data-row={idxRow}
+                      onChange={props.toggleCheckbox} />
+          <Form.Check id={"collections-" + idxRow + '-selectionnees'}
+                      type="radio"
+                      label="Collections selectionnees uniquement"
+                      name="toutes_collections"
+                      checked={!toutesCollectionsInclues}
+                      data-row={idxRow}
+                      onChange={props.toggleCheckbox} />
+        </Form.Group>
 
-      <h3>Entete</h3>
-      <ChampInputMultilingue languages={props.languages}
-                             name="entete"
-                             values={entete}
-                             idxRow={idxRow}
-                             changerChamp={props.changerChampMultilingue} />
+        {!toutesCollectionsInclues?
+          <Form.Group as={Col} md={6} lg={7}>
+            <Form.Label>Selectionner collections de fichiers a publier</Form.Label>
+            {collectionsPubliques}
+          </Form.Group>
+          :''
+        }
 
-      <h3>Collections inclues</h3>
-      <Form.Check id={"collections-toutes-" + idxRow}
-                  type="checkbox"
-                  label="Toutes les collections publiques"
-                  name="toutes_collections"
-                  checked={toutesCollectionsInclues}
-                  data-row={idxRow}
-                  onChange={props.toggleCheckbox} />
+      </Form.Row>
 
-      {collectionsPubliques}
-
-    </div>
+    </>
   )
 
 }
 
-function SectionAlbum(props) {
-  const configuration = props.configuration,
-        idxRow = props.idxRow
-
-  var entete = configuration.entete
-  if(!entete) {
-    // Initialiser entete
-    entete = {}
-    props.languages.forEach(langue=>{
-      entete[langue] = ''
-    })
-  }
-
-  var toutesCollectionsInclues = configuration.toutes_collections?true:false
-  var collectionsSelectionnees = configuration.collections || []
-
-  var collectionsPubliques = ''
-  if(!toutesCollectionsInclues && props.collectionsPubliques) {
-    collectionsPubliques = props.collectionsPubliques.map(item=>{
-      return (
-        <Row key={item.uuid}>
-          <Col lg={1}></Col>
-          <Col>
-            <Form.Check id={"collections-" + item.uuid} key={item.uuid}
-                        type="checkbox"
-                        label={item.nom_collection}
-                        name="collections"
-                        value={item.uuid}
-                        checked={collectionsSelectionnees.includes(item.uuid)}
-                        data-row={idxRow}
-                        onChange={props.toggleListValue} />
-          </Col>
-        </Row>
-      )
-    })
-    collectionsPubliques.unshift(
-      <Row key="instructions">
-        <Col>
-          Choisir collections individuellement
-        </Col>
-      </Row>
-    )
-  }
-
-  return (
-    <div className="section-site">
-      <h2>
-        Albums
-        <Button onClick={props.supprimerSection}
-                className="bouton-supprimer-droite"
-                value={idxRow}
-                variant="secondary"
-                disabled={!props.rootProps.modeProtege}>X</Button>
-      </h2>
-
-      <h3>Entete</h3>
-      <ChampInputMultilingue languages={props.languages}
-                             name="entete"
-                             values={entete}
-                             idxRow={idxRow}
-                             changerChamp={props.changerChampMultilingue} />
-
-      <h3>Collections inclues</h3>
-      <Form.Check id={"collections-toutes-" + idxRow}
-                  type="checkbox"
-                  label="Toutes les collections publiques"
-                  name="toutes_collections"
-                  checked={toutesCollectionsInclues}
-                  data-row={idxRow}
-                  onChange={props.toggleCheckbox} />
-
-      {collectionsPubliques}
-    </div>
-  )
+function SectionVide(props) {
+  return ''
 }
 
-function SectionBlogPosts(props) {
+function SectionForums(props) {
 
-  const configuration = props.configuration,
-        idxRow = props.idxRow
+  return <p>Forums</p>
 
-  var entete = configuration.entete
-  if(!entete) {
-    // Initialiser entete
-    entete = {}
-    props.languages.forEach(langue=>{
-      entete[langue] = ''
-    })
-  }
+  // const configuration = props.configuration,
+  //       idxRow = props.idxRow
+  //
+  // var entete = configuration.entete
+  // if(!entete) {
+  //   // Initialiser entete
+  //   entete = {}
+  //   props.languages.forEach(langue=>{
+  //     entete[langue] = ''
+  //   })
+  // }
+  //
+  // var tousForumesInclus = configuration.touts_forums?true:false
+  // var forumsSelectionnes = configuration.forums || []
+  //
+  // var collectionsPubliques = ''
+  // if(!toutesCollectionsInclues && props.collectionsPubliques) {
+  //   collectionsPubliques = props.collectionsPubliques.map(item=>{
+  //     return (
+  //       <Row key={item.uuid}>
+  //         <Col lg={1}></Col>
+  //         <Col>
+  //           <Form.Check id={"collections-" + item.uuid} key={item.uuid}
+  //                       type="checkbox"
+  //                       label={item.nom_collection}
+  //                       name="collections"
+  //                       value={item.uuid}
+  //                       checked={collectionsSelectionnees.includes(item.uuid)}
+  //                       data-row={idxRow}
+  //                       onChange={props.toggleListValue} />
+  //         </Col>
+  //       </Row>
+  //     )
+  //   })
+  //   collectionsPubliques.unshift(
+  //     <Row key="instructions">
+  //       <Col>
+  //         Choisir collections individuellement
+  //       </Col>
+  //     </Row>
+  //   )
+  // }
+  //
+  // return (
+  //   <div className="section-site">
+  //     <h2>
+  //       Fichiers
+  //       <Button onClick={props.supprimerSection}
+  //               className="bouton-supprimer-droite"
+  //               value={idxRow}
+  //               variant="secondary"
+  //               disabled={!props.rootProps.modeProtege}>X</Button>
+  //     </h2>
+  //
+  //     <h3>Entete</h3>
+  //     <ChampInputMultilingue languages={props.languages}
+  //                            name="entete"
+  //                            values={entete}
+  //                            idxRow={idxRow}
+  //                            changerChamp={props.changerChampMultilingue} />
+  //
+  //     <h3>Collections inclues</h3>
+  //     <Form.Check id={"collections-toutes-" + idxRow}
+  //                 type="checkbox"
+  //                 label="Toutes les collections publiques"
+  //                 name="toutes_collections"
+  //                 checked={toutesCollectionsInclues}
+  //                 data-row={idxRow}
+  //                 onChange={props.toggleCheckbox} />
+  //
+  //     {collectionsPubliques}
+  //
+  //   </div>
+  // )
 
-  return (
-    <div className="section-site">
-      <h2>
-        Blog posts
-        <Button onClick={props.supprimerSection}
-                className="bouton-supprimer-droite"
-                value={idxRow}
-                variant="secondary"
-                disabled={!props.rootProps.modeProtege}>X</Button>
-      </h2>
-
-      <h3>Entete</h3>
-      <ChampInputMultilingue languages={props.languages}
-                             name="entete"
-                             values={entete}
-                             idxRow={idxRow}
-                             changerChamp={props.changerChampMultilingue} />
-
-    </div>
-  )
 }
 
 function AlertErreur(props) {

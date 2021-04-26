@@ -157,41 +157,6 @@ export default class InfoSite extends React.Component {
     this.setState({listeSocketio: nouvelleListeSocketio})
   }
 
-  // ajouterNoeud = noeudId => {
-  //   var nouveauNoeud = noeudId
-  //   console.debug("Ajouter noeud %s", nouveauNoeud)
-  //
-  //   var noeuds = this.state.noeuds_urls
-  //   if( ! noeuds ) {
-  //     noeuds = this.props.noeuds_urls || {}
-  //   }
-  //
-  //   noeuds[nouveauNoeud] = []
-  //   this.setState({noeuds_urls: noeuds, noeud_id: ''}, _=>{console.debug("Ajout noeud, state : %O", this.state)})
-  // }
-  //
-  // ajouterUrl = (noeudId, url) => {
-  //   console.debug("Ajouter url %s a noeudId %s", url, noeudId)
-  //   var noeuds_urls = this.state.noeuds_urls || this.props.site.noeuds_urls
-  //
-  //   var urls = noeuds_urls[noeudId] || []
-  //   urls.push(url)
-  //   noeuds_urls[noeudId] = urls
-  //
-  //   this.setState({noeuds_urls})
-  // }
-  //
-  // supprimerUrl = (noeudId, url) => {
-  //   console.debug("Ajouter url %s a noeudId %s", url, noeudId)
-  //   var noeuds_urls = this.state.noeuds_urls || this.props.site.noeuds_urls
-  //
-  //   var urls = noeuds_urls[noeudId] || []
-  //   urls = urls.filter(item=>item!==url)
-  //   noeuds_urls[noeudId] = urls
-  //
-  //   this.setState({noeuds_urls})
-  // }
-
   sauvegarder = async event => {
     console.debug("Sauvegarder changements formulaire site")
 
@@ -643,10 +608,6 @@ function ListeSocketio(props) {
     const idx = Number(name)
     props.changerSocketio(idx, value)
   }
-
-  // ajouterSocketio={props.ajouterSocketio}
-  // supprimerSocketio={props.supprimerSocketio}
-  // changerPositionSocketio={props.changerPositionSocketio}
 
   return (
     <>
