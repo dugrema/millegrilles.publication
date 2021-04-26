@@ -9,6 +9,8 @@ export default class InfoSite extends React.Component {
     languages: '',
     titre: '',
     listeCdn: '',
+    securite: '',
+    listeSocketio: '',
 
     err: '',
     confirmation: '',
@@ -30,6 +32,7 @@ export default class InfoSite extends React.Component {
 
   changerChamp = event => {
     const {name, value} = event.currentTarget
+    console.debug("Champ %s=%s", name, value)
     this.setState({[name]: value})
   }
 
@@ -123,6 +126,37 @@ export default class InfoSite extends React.Component {
     this.setState({languages})
   }
 
+  ajouterSocketio = socketio => {
+    const listeSocketio = this.state.listeSocketio || this.props.site.listeSocketio || []
+    listeSocketio.push(socketio)
+    this.setState({listeSocketio})
+  }
+
+  supprimerSocketio = idx => {
+    var listeSocketio = this.state.listeSocketio || this.props.site.listeSocketio || []
+    listeSocketio = [...listeSocketio]
+    listeSocketio.splice(idx, 1)
+    this.setState({listeSocketio})
+  }
+
+  changerSocketio = (idx, socketio) => {
+    var listeSocketio = this.state.listeSocketio || this.props.site.listeSocketio || []
+    listeSocketio = [...listeSocketio]
+    listeSocketio[idx] = socketio
+    this.setState({listeSocketio})
+  }
+
+  changerPositionSocketio = (socketio, nouvellePosition) => {
+    console.debug("Changer position cdn %s vers %d", socketio, nouvellePosition)
+    var listeSocketio = this.state.listeSocketio || this.props.site.listeSocketio || []
+
+    var nouvelleListeSocketio = [...listeSocketio]                            // Shallow copy
+    nouvelleListeSocketio = nouvelleListeSocketio.filter(item=>item!==socketio)  // Retirer element
+    nouvelleListeSocketio.splice(nouvellePosition, 0, socketio)             // Mettre element a la nouvelle position
+
+    this.setState({listeSocketio: nouvelleListeSocketio})
+  }
+
   // ajouterNoeud = noeudId => {
   //   var nouveauNoeud = noeudId
   //   console.debug("Ajouter noeud %s", nouveauNoeud)
@@ -165,7 +199,7 @@ export default class InfoSite extends React.Component {
     const domaineAction = 'Publication.majSite'
     var transaction = {}
 
-    const champsFormulaire = ['nom_site', 'languages', 'titre', 'listeCdn']
+    const champsFormulaire = ['nom_site', 'languages', 'titre', 'listeCdn', 'securite', 'listeSocketio']
 
     champsFormulaire.forEach(item=>{
       if(this.state[item]) transaction[item] = this.state[item]
@@ -226,6 +260,10 @@ export default class InfoSite extends React.Component {
                         ajouterUrl={this.ajouterUrl}
                         ajouterCdn={this.ajouterCdn}
                         retirerCdn={this.retirerCdn}
+                        ajouterSocketio={this.ajouterSocketio}
+                        supprimerSocketio={this.supprimerSocketio}
+                        changerSocketio={this.changerSocketio}
+                        changerPositionSocketio={this.changerPositionSocketio}
                         changerPositionCdn={this.changerPositionCdn}
                         supprimerUrl={this.supprimerUrl}
                         {...this.props}
@@ -276,11 +314,20 @@ function FormInfoSite(props) {
         <Form.Text className="text-muted">Reference interne, ce nom n'est pas affiche sur le site.</Form.Text>
       </Form.Group>
 
+      <SecuriteSite changerChamp={props.changerChamp}
+                    securite={props.securite || props.site.securite} />
+
       <Languages {...props} />
 
       <TitreSite languages={props.languages || props.site.languages}
                  titre={props.titre || props.site.titre}
                  changerChampMultilingue={props.changerChampMultilingue} />
+
+      <ListeSocketio listeSocketio={props.listeSocketio || props.site.listeSocketio}
+                     ajouterSocketio={props.ajouterSocketio}
+                     supprimerSocketio={props.supprimerSocketio}
+                     changerSocketio={props.changerSocketio}
+                     changerPositionSocketio={props.changerPositionSocketio} />
 
       <ListeCDN rootProps={props.rootProps}
                 site={props.site}
@@ -290,6 +337,23 @@ function FormInfoSite(props) {
                 changerPositionCdn={props.changerPositionCdn} />
 
     </Form>
+  )
+}
+
+function SecuriteSite(props) {
+  /* Type/niveau de securite du site */
+  return (
+    <Form.Group>
+      <Form.Label>Type de securite du site</Form.Label>
+      <Form.Check type='radio' name='securite'
+                  value='1.public' label='Public' id='securite-1'
+                  checked={props.securite === '1.public'}
+                  onChange={props.changerChamp} />
+      <Form.Check type='radio' name='securite'
+                  value='2.prive' label='Prive' id='securite-2'
+                  checked={props.securite === '2.prive'}
+                  onChange={props.changerChamp} />
+    </Form.Group>
   )
 }
 
@@ -556,13 +620,90 @@ function NoeudsDisponibles(props) {
 
 }
 
+function ListeSocketio(props) {
+  /* Liste de connexions socket.io a utiliser pour le site */
+
+  const listeSocketio = props.listeSocketio || []
+
+  const [socketioValeur, setSocketioValeur] = useState('')
+  const changeSocketioValeur = event => {
+    setSocketioValeur(event.currentTarget.value)
+  }
+  const ajouterSocketio = _ => {
+    props.ajouterSocketio(socketioValeur)
+    setSocketioValeur('')
+  }
+  const supprimerSocketio = event => {
+    const {value} = event.currentTarget
+    const idx = Number(value)
+    props.supprimerSocketio(idx)
+  }
+  const changerSocketio = event => {
+    const {name, value} = event.currentTarget
+    const idx = Number(name)
+    props.changerSocketio(idx, value)
+  }
+
+  // ajouterSocketio={props.ajouterSocketio}
+  // supprimerSocketio={props.supprimerSocketio}
+  // changerPositionSocketio={props.changerPositionSocketio}
+
+  return (
+    <>
+      <Form.Group>
+        <Form.Label>Connexions dynamiques Socket.IO</Form.Label>
+        <Form.Text>
+          Notes :
+          <ul>
+            <li>Ajouter les connexions en ordre de preference.</li>
+            <li>Socket.IO est optionnel pour Vitrine et requis pour Place.</li>
+            <li>Par defaut pour Vitrine (public) : https://**MON.SITE.COM**/vitrine/socket.io</li>
+            <li>Par defaut pour Place (prive) : https://**MON.SITE.COM**/place/socket.io</li>
+          </ul>
+        </Form.Text>
+
+        {listeSocketio.map((item, idx)=>(
+          <InputGroup key={idx}>
+            <Form.Control type='url'
+                          name={''+idx}
+                          value={item}
+                          onChange={changerSocketio} />
+            <InputGroup.Append>
+              <ButtonGroup>
+                <Button variant='outline-secondary'
+                        onClick={_=>{props.changerPositionSocketio(item, idx-1)}}
+                        disabled={idx===0}>
+                  <i className="fa fa-arrow-up" />
+                </Button>
+                <Button variant='outline-secondary'
+                        onClick={_=>{props.changerPositionSocketio(item, idx+1)}}
+                        disabled={idx===listeSocketio.length-1}>
+                  <i className="fa fa-arrow-down" />
+                </Button>
+                <Button variant='outline-secondary' onClick={supprimerSocketio} value={idx}>Supprimer</Button>
+              </ButtonGroup>
+            </InputGroup.Append>
+          </InputGroup>
+        ))}
+
+        <InputGroup>
+          <Form.Control type='url' value={socketioValeur} onChange={changeSocketioValeur} />
+          <InputGroup.Append>
+            <Button variant='outline-secondary' onClick={ajouterSocketio}>Ajouter</Button>
+          </InputGroup.Append>
+        </InputGroup>
+      </Form.Group>
+    </>
+  )
+}
+
 function ListeCDN(props) {
   const site = props.site,
         listeCdn = props.listeCdn || site.listeCdn || []
 
   const [listeCdnExistantes, setListeCdnExistantes] = useState('')
   const [cdnSelectionne, setCdnSelectionne] = useState('')
-  useEffect(async _=>{
+  useEffect(_=>{
     // Charger la liste des CDNs configures
     chargerListeCdns(props.rootProps.connexionWorker, setListeCdnExistantes)
   }, [])
@@ -576,8 +717,8 @@ function ListeCDN(props) {
 
   if(listeCdnExistantes) {
     // Options pour select (ajouter)
-    optionsCdns = listeCdnExistantes.filter(cdn=>!listeCdn.includes(cdn.cdn_id)).map(cdn=>{
-      return <option value={cdn.cdn_id}>{cdn.description||cdn.cdn_id}</option>
+    optionsCdns = listeCdnExistantes.filter(cdn=>!listeCdn.includes(cdn.cdn_id)).map((cdn, idx)=>{
+      return <option key={idx} value={cdn.cdn_id}>{cdn.description||cdn.cdn_id}</option>
     })
 
     // Liste de CDN deja associes au site
@@ -585,7 +726,7 @@ function ListeCDN(props) {
       const cdn = listeCdnExistantes.filter(item=>item.cdn_id===cdnId)[0]
 
       return (
-        <Row>
+        <Row key={idx}>
           <Col md={9}>{idx+1 + '. '}{cdn.description || cdn.cdn_id}</Col>
           <Col md={3}>
             <ButtonGroup>
