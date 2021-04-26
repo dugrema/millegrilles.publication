@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import {Row, Col, Button, Form, FormControl, InputGroup, Alert} from 'react-bootstrap'
 
 export default class InfoSite extends React.Component {
@@ -8,6 +8,7 @@ export default class InfoSite extends React.Component {
     nom_site: '',
     languages: '',
     titre: '',
+    listeCdn: '',
 
     err: '',
     confirmation: '',
@@ -41,9 +42,56 @@ export default class InfoSite extends React.Component {
     this.setState({[name]: {...valeur, [langue]: value}})
   }
 
+  ajouterCdn = cdnId => {
+    if(!cdnId) return
+    console.debug("Ajouter cdn %O", cdnId)
+    const listeCdn = this.state.listeCdn || this.props.site.listeCdn || []
+    if(!listeCdn.includes(cdnId)) listeCdn.push(cdnId)
+    this.setState({listeCdn})
+  }
+
+  retirerCdn = event => {
+    const cdnId = event.currentTarget.value
+    console.debug("Retirer cdn %O", cdnId)
+    var listeCdn = this.state.listeCdn || this.props.site.listeCdn || []
+    listeCdn = listeCdn.filter(cdnIdListe=>cdnIdListe !== cdnId)
+    this.setState({listeCdn})
+  }
+
+  changerPositionCdn = (cdnId, nouvellePosition) => {
+    console.debug("Changer position cdn %s vers %d", cdnId, nouvellePosition)
+    var listeCdn = this.state.listeCdn || this.props.site.listeCdn || []
+    var itemTrouve = false
+    const nouvelleListeCdn = listeCdn.reduce((acc, item, idx)=>{
+      if(item === cdnId) {
+        // Retire l'item de la position actuelle
+        console.debug("!!! ITEM TROUVE : %O", cdnId)
+        itemTrouve = true
+        return acc
+      }
+      if(!itemTrouve && idx === nouvellePosition) {
+        // Inserer le CDN ID a cette position
+        console.debug("!!! !itemTrouve nouveau")
+        acc.push(cdnId)
+      } else if(itemTrouve && idx === nouvellePosition + 1) {
+        // Inserer le CDN ID a cette position
+        // On tient compte du fait que tous les indices sont decale de 1 (item deja retire)
+        console.debug("!!! itemTrouve nouveau")
+        acc.push(cdnId)
+      }
+      acc.push(item)
+      return acc
+    }, [])
+    // Condition d'ajout en fin de liste
+    if(!nouvelleListeCdn.includes(cdnId)) nouvelleListeCdn.push(cdnId)
+
+    console.debug("Nouvelle liste cdn : %O\nancienne %O", nouvelleListeCdn, this.state.listeCdn)
+    this.setState({listeCdn: nouvelleListeCdn})
+  }
+
   resetChamps = _ => {
     this.setState({
-      nom: '',
+      nom: '', listeCdn: '',
     })
   }
 
@@ -95,40 +143,40 @@ export default class InfoSite extends React.Component {
     this.setState({languages})
   }
 
-  ajouterNoeud = noeudId => {
-    var nouveauNoeud = noeudId
-    console.debug("Ajouter noeud %s", nouveauNoeud)
-
-    var noeuds = this.state.noeuds_urls
-    if( ! noeuds ) {
-      noeuds = this.props.noeuds_urls || {}
-    }
-
-    noeuds[nouveauNoeud] = []
-    this.setState({noeuds_urls: noeuds, noeud_id: ''}, _=>{console.debug("Ajout noeud, state : %O", this.state)})
-  }
-
-  ajouterUrl = (noeudId, url) => {
-    console.debug("Ajouter url %s a noeudId %s", url, noeudId)
-    var noeuds_urls = this.state.noeuds_urls || this.props.site.noeuds_urls
-
-    var urls = noeuds_urls[noeudId] || []
-    urls.push(url)
-    noeuds_urls[noeudId] = urls
-
-    this.setState({noeuds_urls})
-  }
-
-  supprimerUrl = (noeudId, url) => {
-    console.debug("Ajouter url %s a noeudId %s", url, noeudId)
-    var noeuds_urls = this.state.noeuds_urls || this.props.site.noeuds_urls
-
-    var urls = noeuds_urls[noeudId] || []
-    urls = urls.filter(item=>item!==url)
-    noeuds_urls[noeudId] = urls
-
-    this.setState({noeuds_urls})
-  }
+  // ajouterNoeud = noeudId => {
+  //   var nouveauNoeud = noeudId
+  //   console.debug("Ajouter noeud %s", nouveauNoeud)
+  //
+  //   var noeuds = this.state.noeuds_urls
+  //   if( ! noeuds ) {
+  //     noeuds = this.props.noeuds_urls || {}
+  //   }
+  //
+  //   noeuds[nouveauNoeud] = []
+  //   this.setState({noeuds_urls: noeuds, noeud_id: ''}, _=>{console.debug("Ajout noeud, state : %O", this.state)})
+  // }
+  //
+  // ajouterUrl = (noeudId, url) => {
+  //   console.debug("Ajouter url %s a noeudId %s", url, noeudId)
+  //   var noeuds_urls = this.state.noeuds_urls || this.props.site.noeuds_urls
+  //
+  //   var urls = noeuds_urls[noeudId] || []
+  //   urls.push(url)
+  //   noeuds_urls[noeudId] = urls
+  //
+  //   this.setState({noeuds_urls})
+  // }
+  //
+  // supprimerUrl = (noeudId, url) => {
+  //   console.debug("Ajouter url %s a noeudId %s", url, noeudId)
+  //   var noeuds_urls = this.state.noeuds_urls || this.props.site.noeuds_urls
+  //
+  //   var urls = noeuds_urls[noeudId] || []
+  //   urls = urls.filter(item=>item!==url)
+  //   noeuds_urls[noeudId] = urls
+  //
+  //   this.setState({noeuds_urls})
+  // }
 
   sauvegarder = async event => {
     console.debug("Sauvegarder changements formulaire site")
@@ -137,7 +185,7 @@ export default class InfoSite extends React.Component {
     const domaineAction = 'Publication.majSite'
     var transaction = {}
 
-    const champsFormulaire = ['nom_site', 'languages', 'noeuds_urls', 'titre']
+    const champsFormulaire = ['nom_site', 'languages', 'titre', 'listeCdn']
 
     champsFormulaire.forEach(item=>{
       if(this.state[item]) transaction[item] = this.state[item]
@@ -196,6 +244,9 @@ export default class InfoSite extends React.Component {
                         supprimerLanguage={this.supprimerLanguage}
                         ajouterNoeud={this.ajouterNoeud}
                         ajouterUrl={this.ajouterUrl}
+                        ajouterCdn={this.ajouterCdn}
+                        retirerCdn={this.retirerCdn}
+                        changerPositionCdn={this.changerPositionCdn}
                         supprimerUrl={this.supprimerUrl}
                         {...this.props}
                         {...this.state} />
@@ -250,6 +301,13 @@ function FormInfoSite(props) {
       <TitreSite languages={props.languages || props.site.languages}
                  titre={props.titre || props.site.titre}
                  changerChampMultilingue={props.changerChampMultilingue} />
+
+      <ListeCDN rootProps={props.rootProps}
+                site={props.site}
+                listeCdn={props.listeCdn}
+                ajouterCdn={props.ajouterCdn}
+                retirerCdn={props.retirerCdn}
+                changerPositionCdn={props.changerPositionCdn} />
 
     </Form>
   )
@@ -516,6 +574,88 @@ function NoeudsDisponibles(props) {
     </>
   )
 
+}
+
+function ListeCDN(props) {
+  const site = props.site,
+        listeCdn = props.listeCdn || site.listeCdn || []
+
+  const [listeCdnExistantes, setListeCdnExistantes] = useState('')
+  const [cdnSelectionne, setCdnSelectionne] = useState('')
+  useEffect(async _=>{
+    // Charger la liste des CDNs configures
+    chargerListeCdns(props.rootProps.connexionWorker, setListeCdnExistantes)
+  }, [])
+  const ajouterCdn = cdnId => {
+    props.ajouterCdn(cdnSelectionne)
+    setCdnSelectionne('')
+  }
+
+  var optionsCdns = '',
+      cdnAssocies = ''
+
+  if(listeCdnExistantes) {
+    // Options pour select (ajouter)
+    optionsCdns = listeCdnExistantes.filter(cdn=>!listeCdn.includes(cdn.cdn_id)).map(cdn=>{
+      return <option value={cdn.cdn_id}>{cdn.description||cdn.cdn_id}</option>
+    })
+
+    // Liste de CDN deja associes au site
+    cdnAssocies = listeCdn.map((cdnId, idx)=>{
+      const cdn = listeCdnExistantes.filter(item=>item.cdn_id===cdnId)[0]
+
+      var boutonUp = '', boutonDown = ''
+      if(idx > 0) {
+        boutonUp = <Button onClick={_=>{props.changerPositionCdn(cdn.cdn_id, idx-1)}}>UP</Button>
+      }
+      if(idx < listeCdnExistantes.length-1) {
+        boutonDown = <Button onClick={_=>{props.changerPositionCdn(cdn.cdn_id, idx+1)}}>DOWN</Button>
+      }
+      return (
+        <Row>
+          <Col md={9}>{cdn.description || cdn.cdn_id}</Col>
+          <Col md={3}>
+            {boutonUp}
+            {boutonDown}
+            <Button variant="secondary" onClick={props.retirerCdn} value={cdn.cdn_id}>
+              <i className="fa fa-close"/>
+            </Button>
+          </Col>
+        </Row>
+      )
+    })
+  }
+
+  return (
+    <>
+      <Form.Group>
+        <Form.Row>
+          <Form.Label>Liste de Content Distribution Networks</Form.Label>
+          <InputGroup>
+            <Form.Control as="select" name="cdnId"
+                          value={cdnSelectionne}
+                          onChange={event=>{setCdnSelectionne(event.currentTarget.value)}}>
+              <option>Selectionner un CDN a ajouter...</option>
+              {optionsCdns}
+            </Form.Control>
+            <InputGroup.Append>
+              <Button variant="outline-secondary" onClick={ajouterCdn}>Ajouter</Button>
+            </InputGroup.Append>
+          </InputGroup>
+        </Form.Row>
+      </Form.Group>
+
+      <Form.Group>
+        <Form.Label>Content Distribution Networks associes au site</Form.Label>
+        {cdnAssocies}
+      </Form.Group>
+    </>
+  )
+}
+
+async function chargerListeCdns(connexionWorker, setListCdn) {
+  const listeCdnRecue = await connexionWorker.requeteListeCdns()
+  setListCdn(listeCdnRecue)
 }
 
 function AlertErreur(props) {
