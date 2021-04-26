@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import {Row, Col, Button, Form, FormControl, InputGroup, Alert} from 'react-bootstrap'
+import {Row, Col, Button, ButtonGroup, Form, FormControl, InputGroup, Alert} from 'react-bootstrap'
 
 export default class InfoSite extends React.Component {
 
@@ -59,33 +59,13 @@ export default class InfoSite extends React.Component {
   }
 
   changerPositionCdn = (cdnId, nouvellePosition) => {
-    console.debug("Changer position cdn %s vers %d", cdnId, nouvellePosition)
+    // console.debug("Changer position cdn %s vers %d", cdnId, nouvellePosition)
     var listeCdn = this.state.listeCdn || this.props.site.listeCdn || []
-    var itemTrouve = false
-    const nouvelleListeCdn = listeCdn.reduce((acc, item, idx)=>{
-      if(item === cdnId) {
-        // Retire l'item de la position actuelle
-        console.debug("!!! ITEM TROUVE : %O", cdnId)
-        itemTrouve = true
-        return acc
-      }
-      if(!itemTrouve && idx === nouvellePosition) {
-        // Inserer le CDN ID a cette position
-        console.debug("!!! !itemTrouve nouveau")
-        acc.push(cdnId)
-      } else if(itemTrouve && idx === nouvellePosition + 1) {
-        // Inserer le CDN ID a cette position
-        // On tient compte du fait que tous les indices sont decale de 1 (item deja retire)
-        console.debug("!!! itemTrouve nouveau")
-        acc.push(cdnId)
-      }
-      acc.push(item)
-      return acc
-    }, [])
-    // Condition d'ajout en fin de liste
-    if(!nouvelleListeCdn.includes(cdnId)) nouvelleListeCdn.push(cdnId)
 
-    console.debug("Nouvelle liste cdn : %O\nancienne %O", nouvelleListeCdn, this.state.listeCdn)
+    var nouvelleListeCdn = [...listeCdn]                            // Shallow copy
+    nouvelleListeCdn = nouvelleListeCdn.filter(item=>item!==cdnId)  // Retirer element
+    nouvelleListeCdn.splice(nouvellePosition, 0, cdnId)             // Mettre element a la nouvelle position
+
     this.setState({listeCdn: nouvelleListeCdn})
   }
 
@@ -374,14 +354,14 @@ class Languages extends React.Component {
 
 function TitreSite(props) {
   return (
-    <>
+    <Form.Group>
       <Form.Label>Titre</Form.Label>
       <ChampInputMultilingue languages={props.languages}
                              name="titre"
                              values={props.titre}
                              changerChamp={props.changerChampMultilingue} />
       <Form.Text className="text-muted">Titre affiche sur le site</Form.Text>
-    </>
+    </Form.Group>
   )
 }
 
@@ -555,7 +535,7 @@ function NoeudsDisponibles(props) {
   })
 
   return (
-    <>
+    <Form.Group>
       <label htmlFor="noeuds-disponibles">Ajouter noeud pour deployer le site</label>
       <InputGroup>
 
@@ -571,7 +551,7 @@ function NoeudsDisponibles(props) {
         </InputGroup.Append>
 
       </InputGroup>
-    </>
+    </Form.Group>
   )
 
 }
@@ -604,22 +584,21 @@ function ListeCDN(props) {
     cdnAssocies = listeCdn.map((cdnId, idx)=>{
       const cdn = listeCdnExistantes.filter(item=>item.cdn_id===cdnId)[0]
 
-      var boutonUp = '', boutonDown = ''
-      if(idx > 0) {
-        boutonUp = <Button onClick={_=>{props.changerPositionCdn(cdn.cdn_id, idx-1)}}>UP</Button>
-      }
-      if(idx < listeCdnExistantes.length-1) {
-        boutonDown = <Button onClick={_=>{props.changerPositionCdn(cdn.cdn_id, idx+1)}}>DOWN</Button>
-      }
       return (
         <Row>
-          <Col md={9}>{cdn.description || cdn.cdn_id}</Col>
+          <Col md={9}>{idx+1 + '. '}{cdn.description || cdn.cdn_id}</Col>
           <Col md={3}>
-            {boutonUp}
-            {boutonDown}
-            <Button variant="secondary" onClick={props.retirerCdn} value={cdn.cdn_id}>
-              <i className="fa fa-close"/>
-            </Button>
+            <ButtonGroup>
+              <Button onClick={_=>{props.changerPositionCdn(cdn.cdn_id, idx-1)}} disabled={idx===0} variant="secondary">
+                <i className="fa fa-arrow-up" />
+              </Button>
+              <Button onClick={_=>{props.changerPositionCdn(cdn.cdn_id, idx+1)}}  disabled={idx===listeCdn.length-1} variant="secondary">
+                <i className="fa fa-arrow-down" />
+              </Button>
+              <Button variant="secondary" onClick={props.retirerCdn} value={cdn.cdn_id}>
+                <i className="fa fa-close"/>
+              </Button>
+            </ButtonGroup>
           </Col>
         </Row>
       )
@@ -634,19 +613,31 @@ function ListeCDN(props) {
           <InputGroup>
             <Form.Control as="select" name="cdnId"
                           value={cdnSelectionne}
-                          onChange={event=>{setCdnSelectionne(event.currentTarget.value)}}>
-              <option>Selectionner un CDN a ajouter...</option>
+                          onChange={event=>{setCdnSelectionne(event.currentTarget.value)}}
+                          disabled={optionsCdns.length===0}>
+              <option>
+                { optionsCdns.length > 0?
+                    'Selectionner un CDN a ajouter...':
+                    'Aucun CDN additionnel disponible'
+                }
+              </option>
               {optionsCdns}
             </Form.Control>
             <InputGroup.Append>
-              <Button variant="outline-secondary" onClick={ajouterCdn}>Ajouter</Button>
+              <Button variant="outline-secondary" onClick={ajouterCdn} disabled={optionsCdns.length===0}>Ajouter</Button>
             </InputGroup.Append>
           </InputGroup>
         </Form.Row>
+        <Form.Text className="text-muted">
+          Vous pouvez ajouter a cette liste a l'aide de la section de configuration Content Delivery Network (CDN).
+        </Form.Text>
       </Form.Group>
 
       <Form.Group>
         <Form.Label>Content Distribution Networks associes au site</Form.Label>
+        <Form.Text>
+          Note : l'ordre des CDN est utilise comme preference par le client
+        </Form.Text>
         {cdnAssocies}
       </Form.Group>
     </>
