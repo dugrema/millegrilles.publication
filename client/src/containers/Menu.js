@@ -35,17 +35,29 @@ export class MenuItems extends React.Component {
   render() {
 
     return (
-      <Nav className="mr-auto" activeKey={this.props.section} onSelect={this.changerPage}>
+      <Nav className="mr-auto" activeKey={this.props.section} onSelect={this.props.changerPage}>
 
         <Nav.Item>
-          <Nav.Link eventKey='Sites'>
+          <Nav.Link eventKey=''>
+            <Trans>menu.Publication</Trans>
+          </Nav.Link>
+        </Nav.Item>
+
+        <Nav.Item>
+          <Nav.Link eventKey='listeSites'>
             <Trans>menu.Sites</Trans>
           </Nav.Link>
         </Nav.Item>
 
         <Nav.Item>
-          <Nav.Link eventKey='CDNConfig'>
+          <Nav.Link eventKey='cdnConfig'>
             <Trans>menu.CDNConfig</Trans>
+          </Nav.Link>
+        </Nav.Item>
+
+        <Nav.Item>
+          <Nav.Link eventKey='pagesSites'>
+            <Trans>menu.PagesSites</Trans>
           </Nav.Link>
         </Nav.Item>
 

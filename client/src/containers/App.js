@@ -10,6 +10,7 @@ import {splitPEMCerts} from '@dugrema/millegrilles.common/lib/forgecommon'
 
 import ListeSites from './ListeSites'
 import CDNConfig from './ContentDeliveryNetworkConfig'
+import PagesSites from './PagesSites'
 
 import './App.css'
 import $ from 'jquery'
@@ -36,7 +37,7 @@ export class ApplicationPublication extends React.Component {
 
     websocketApp: '',
 
-    afficherSection: '',
+    // afficherSection: '',
     err: '',
   }
 
@@ -58,20 +59,20 @@ export class ApplicationPublication extends React.Component {
   changerPage = event => {
     // Retour page accueil
     var afficherSection = event.currentTarget?event.currentTarget.value:event
-    this.setState({afficherSection})
+    this.props.setAfficherSection(afficherSection)
   }
 
   clearErreur = _ => {
     this.setState({err: ''})
   }
 
-  setAfficherSection = event => {
-    const afficherSection = event.currentTarget?event.currentTarget.value:event
-    this.setState({afficherSection})
-  }
+  // setAfficherSection = event => {
+  //   const afficherSection = event.currentTarget?event.currentTarget.value:event
+  //   this.setState({afficherSection})
+  // }
 
   retour = _ => {
-    this.setState({afficherSection: ''})
+    this.props.setAfficherSection('')
   }
 
   render() {
@@ -93,17 +94,19 @@ export class ApplicationPublication extends React.Component {
     } else {
 
       var ElementPage = null
-      switch(this.state.afficherSection) {
+      switch(this.props.afficherSection) {
         case 'cdnConfig':
           ElementPage = CDNConfig; break
         case 'listeSites':
           ElementPage = ListeSites; break
+        case 'pagesSites':
+          ElementPage = PagesSites; break
         default:
           ElementPage = ChoisirSection
       }
 
       page = <ElementPage rootProps={rootProps}
-                          setAfficherSection={this.setAfficherSection}
+                          setAfficherSection={this.props.setAfficherSection}
                           retour={this.retour} />
     }
 
@@ -143,9 +146,10 @@ function ChoisirSection(props) {
 
       <p>Choisir une section</p>
 
-      <Nav onSelect={props.setAfficherSection}>
+      <Nav onSelect={props.setAfficherSection} className="flex-column">
         <Nav.Link eventKey="listeSites">Sites</Nav.Link>
         <Nav.Link eventKey="cdnConfig">Destinations Content Delivery Network</Nav.Link>
+        <Nav.Link eventKey="pagesSites">Pages Sites</Nav.Link>
       </Nav>
 
     </>

@@ -33,6 +33,8 @@ export default class AppTopLevel extends React.Component {
     connexionWorkerInstance: '',
 
     signateurTransaction: '',
+
+    afficherSection: '',
   }
 
   componentDidMount() {
@@ -51,6 +53,12 @@ export default class AppTopLevel extends React.Component {
 
   componentWillUnmount() {
     cleanupWorkers(this)
+  }
+
+  setAfficherSection = event => {
+    console.debug("Afficher section : %O", event)
+    const afficherSection = event.currentTarget?event.currentTarget.value:event
+    this.setState({afficherSection})
   }
 
   setSousMenuApplication = sousMenuApplication => {
@@ -111,13 +119,17 @@ export default class AppTopLevel extends React.Component {
       page = <p>Chargement en cours</p>
     } else {
       // 3. Afficher application
-      page = <ApplicationPublication setSousMenuApplication={this.setSousMenuApplication} rootProps={{...this.state}} />
+      page = <ApplicationPublication setSousMenuApplication={this.setSousMenuApplication}
+                                     afficherSection={this.state.afficherSection}
+                                     setAfficherSection={this.setAfficherSection}
+                                     rootProps={{...this.state}} />
     }
 
     return (
 
       <Layout changerPage={this.changerPage}
               rootProps={rootProps}
+              setAfficherSection={this.setAfficherSection}
               sousMenuApplication={this.state.sousMenuApplication}
               appProps={this.props}>
 
@@ -138,6 +150,7 @@ export class Layout extends React.Component {
         <div>
           <Entete changerPage={this.props.changerPage}
                   sousMenuApplication={this.props.sousMenuApplication}
+                  setAfficherSection={this.props.setAfficherSection}
                   rootProps={this.props.rootProps} />
 
           <Container className="layout-contenu">
@@ -154,7 +167,8 @@ export class Layout extends React.Component {
 function Entete(props) {
   return (
     <Container>
-      <Menu changerPage={props.changerPage} rootProps={props.rootProps}/>
+      <Menu changerPage={props.setAfficherSection}
+            rootProps={props.rootProps}/>
     </Container>
   )
 }

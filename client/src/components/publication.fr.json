@@ -204,8 +204,10 @@
       }
     },
     "menu": {
+      "Publication": "Publication",
       "Sites": "Sites",
       "CDNConfig": "CDN",
+      "PagesSites": "Pages",
       "changerLangue": "English"
     }
   }
