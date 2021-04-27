@@ -175,10 +175,16 @@ export default class SectionsSite extends React.Component {
     var sections = this.state.sections || this.props.site.sections || []
     var sectionsRendered = null
 
+    var section = null, sectionId = this.state.sectionId
+    if(sectionId && sectionId !== true) {
+      section = this.state.listeSectionsConnues.filter(item=>item.section_id===sectionId)[0]
+    }
+
     // Afficher la section a modifier
     if(this.state.sectionId) {
       return (
         <AfficherSection sectionId={this.state.sectionId}
+                         section={section}
                          typeSection={this.state.typeSection}
                          retour={_=>this.setSectionId('')}
                          site={this.props.site}
@@ -219,7 +225,11 @@ export default class SectionsSite extends React.Component {
         {listeSections.map((sectionId, idx)=>{
           return (
             <Row>
-              <Col>{sectionId}</Col>
+              <Col>
+                <Button variant="link" onClick={this.setSectionId} value={sectionId}>
+                  {sectionId}
+                </Button>
+              </Col>
               <Col>
                 <ButtonGroup className="padding-droite">
                   <Button variant="secondary" disabled={idx===0}
@@ -245,9 +255,15 @@ export default class SectionsSite extends React.Component {
             .filter(section=>!listeSections.includes(section.section_id))
             .sort(trierSections)
             .map((section, idx)=>{
+
+          const nomSection = section.nom_section || section.section_id
           return (
             <Row>
-              <Col>{section.nom_section || section.section_id}</Col>
+              <Col>
+                <Button variant="link" onClick={this.setSectionId} value={section.section_id}>
+                  {nomSection}
+                </Button>
+              </Col>
               <Col>
                 <Button onClick={this.activerSection}
                         value={section.section_id}
@@ -284,16 +300,9 @@ function trierSections(a, b) {
 
 function AfficherSection(props) {
 
-  const [section, setSection] = useState('')
+  const section = props.section || {type: props.typeSection}
+  console.debug("Section : %O", section)
   const [configuration, setConfiguration] = useState('')
-  useEffect(_=>{
-    if(props.sectionId !== true) {
-      chargerSection(props.rootProps.connexionWorker, props.sectionId, setSection)
-    } else {
-      // On a une nouvelle section
-      setSection({type: props.typeSection})
-    }
-  }, [])
 
   if(!section) return <p>Chargement en cours</p>
 
@@ -320,7 +329,7 @@ function AfficherSection(props) {
   }
 
   var TypeSection = null
-  switch(section.type) {
+  switch(section.type_section) {
     case 'fichiers': TypeSection = SectionFichiers; break
     case 'album': TypeSection = SectionFichiers; break
     case 'pages': TypeSection = SectionVide; break
@@ -341,7 +350,7 @@ function AfficherSection(props) {
 
   return (
     <>
-      <h2>Section {section.type}</h2>
+      <h2>Section {section.type_section}</h2>
       <Form.Group>
         <Form.Label>Titre affiche de la section</Form.Label>
         <ChampInputMultilingue languages={props.languages}
@@ -519,11 +528,6 @@ async function chargerSectionsConnues(wsa, siteId, setSectionsConnues) {
   const listeSections = await wsa.requeteSectionsSite(siteId)
   console.debug("Sections pour site %s = %O", siteId, listeSections)
   setSectionsConnues(listeSections)
-}
-
-async function chargerSection(connexionWorker, sectionId, setSection) {
-  const section = await connexionWorker.requeteSection({sectionId})
-  setSection(section)
 }
 
 async function sauvegarderSite(connexionWorker, siteId, listeSections) {

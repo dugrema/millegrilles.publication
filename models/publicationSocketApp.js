@@ -102,10 +102,6 @@ function requeteForums(socket, params, cb) {
   executerRequete('Forum.getForums', socket, params, cb)
 }
 
-function requeteSectionsSite(socket, params, cb) {
-  executerRequete('Publication.listeSectionsSite', socket, params, cb)
-}
-
 async function executerRequete(domaineAction, socket, params, cb) {
   const amqpdao = socket.amqpdao
   try {

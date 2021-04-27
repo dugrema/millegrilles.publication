@@ -22,6 +22,10 @@ function requeteSectionsSite(siteId) {
   return connexionClient.emitBlocking('publication/requeteSectionsSite', {site_id: siteId})
 }
 
+function requeteSection(sectionId) {
+  return connexionClient.emitBlocking('publication/requeteSection', {section_id: sectionId})
+}
+
 function requetePosts(post_ids) {
   return connexionClient.emitBlocking('publication/requetePosts', {post_ids})
 }
@@ -74,7 +78,7 @@ comlinkExpose({
 
   requeteSites, requeteSite, requetePosts, requeteNoeudsPublics,
   requeteCollectionsPubliques, requeteListeCdns, requeteCleSsh,
-  requeteForums, requeteSectionsSite,
+  requeteForums, requeteSectionsSite, requeteSection,
 
   creerSite, majSite, majSection, majCdn, supprimerCdn,
 })
