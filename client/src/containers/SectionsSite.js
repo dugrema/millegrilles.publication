@@ -245,7 +245,7 @@ function AfficherSection(props) {
       <Form.Group>
         <Form.Label>Actions sur la section</Form.Label>
         <Form.Row>
-          <ButtonGroup>
+          <ButtonGroup className="padding-droite">
             <Button variant="secondary" disabled={idxRow===0}
                     onClick={_=>{props.changerPositionSection(idxRow, idxRow-1)}}>
               <i className="fa fa-arrow-up"/>
@@ -255,11 +255,10 @@ function AfficherSection(props) {
               <i className="fa fa-arrow-down"/>
             </Button>
           </ButtonGroup>
-          {' '}
           <Button onClick={props.supprimerSection}
                   value={idxRow}
                   variant="danger"
-                  disabled={!props.rootProps.modeProtege}>Supprimer section fichiers</Button>
+                  disabled={!props.rootProps.modeProtege}>Supprimer section</Button>
         </Form.Row>
       </Form.Group>
     </>

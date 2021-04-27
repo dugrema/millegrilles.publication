@@ -39,6 +39,10 @@ label, .label {
   color: #61dafb;
 }
 
+.padding-droite {
+  padding-right: 1em;
+}
+
 .bouton {
   text-align: right;
   padding-right: 1em;
