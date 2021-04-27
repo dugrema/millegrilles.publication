@@ -44,6 +44,10 @@ function requeteForums() {
 
 // Commandes
 
+function creerSite(transaction) {
+  return connexionClient.emitBlocking('publication/creerSite', transaction, {domaine: 'Publication.creerSite'})
+}
+
 function majSite(transaction) {
   return connexionClient.emitBlocking('publication/majSite', transaction, {domaine: 'Publication.majSite'})
 }
@@ -68,5 +72,5 @@ comlinkExpose({
   requeteCollectionsPubliques, requeteListeCdns, requeteCleSsh,
   requeteForums,
 
-  majSite, majPost, majCdn, supprimerCdn,
+  creerSite, majSite, majPost, majCdn, supprimerCdn,
 })

@@ -67,9 +67,9 @@ export default class ListeSites extends React.Component {
 
     const wsa = this.props.rootProps.connexionWorker
     try {
-      const reponse = await wsa.majSite({})
+      const reponse = await wsa.creerSite({})
       console.debug("Reponse nouveau site : %O", reponse)
-      this.setState({siteId: reponse.siteId})
+      this.setState({siteId: reponse.site.site_id})
     } catch (err) {
       console.error("Erreur creer site : %O", err)
       this.setState({err})

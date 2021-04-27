@@ -14,8 +14,10 @@ function configurerEvenements(socket) {
       {eventName: 'publication/requeteForums', callback: (params, cb) => {requeteForums(socket, params, cb)}},
     ],
     listenersProteges: [
+      {eventName: 'publication/creerSite', callback: (transaction, cb) => {
+        soumettreTransaction(socket, transaction, 'Publication.creerSite', cb)
+      }},
       {eventName: 'publication/majSite', callback: (transaction, cb) => {
-        debug("Publication/majSite: %O", transaction)
         soumettreTransaction(socket, transaction, 'Publication.majSite', cb)
       }},
       {eventName: 'publication/majPost', callback: (transaction, cb) => {
