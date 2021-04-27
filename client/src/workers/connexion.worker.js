@@ -18,6 +18,10 @@ function requeteSite(siteId) {
   return connexionClient.emitBlocking('publication/requeteSite', {site_id: siteId})
 }
 
+function requeteSectionsSite(siteId) {
+  return connexionClient.emitBlocking('publication/requeteSectionsSite', {site_id: siteId})
+}
+
 function requetePosts(post_ids) {
   return connexionClient.emitBlocking('publication/requetePosts', {post_ids})
 }
@@ -52,8 +56,8 @@ function majSite(transaction) {
   return connexionClient.emitBlocking('publication/majSite', transaction, {domaine: 'Publication.majSite'})
 }
 
-function majPost(transaction) {
-  return connexionClient.emitBlocking('publication/majPost', transaction)
+function majSection(transaction) {
+  return connexionClient.emitBlocking('publication/majSection', transaction, {domaine: 'Publication.majSection'})
 }
 
 function majCdn(params) {
@@ -70,7 +74,7 @@ comlinkExpose({
 
   requeteSites, requeteSite, requetePosts, requeteNoeudsPublics,
   requeteCollectionsPubliques, requeteListeCdns, requeteCleSsh,
-  requeteForums,
+  requeteForums, requeteSectionsSite,
 
-  creerSite, majSite, majPost, majCdn, supprimerCdn,
+  creerSite, majSite, majSection, majCdn, supprimerCdn,
 })

@@ -48,7 +48,9 @@ function Site(props) {
   return (
     <>
       <h2>Modifier pages de {props.site.nom_site}</h2>
-      <p>Site</p>
+
+      <p>Choisir une section a modifier.</p>
+
       <Button onClick={props.retour}>Retour</Button>
     </>
   )

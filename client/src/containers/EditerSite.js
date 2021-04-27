@@ -9,6 +9,7 @@ import SectionsSite from './SectionsSite'
 const routingKeysSite = [
   'transaction.Publication.*.majSite',
   'transaction.Publication.majSite',
+  'evenement.Publication.confirmationMajSite',
 ]
 
 export default class EditerSite extends React.Component {
@@ -51,7 +52,7 @@ export default class EditerSite extends React.Component {
           routingKey = event.routingKey
     const action = routingKey.split('.').pop()
 
-    if(action === 'majSite' && this.props.siteId === message.site_id) {
+    if(['confirmationMajSite', 'majSite'].includes(action) && this.props.siteId === message.site_id) {
       console.debug("Modifier site avec transaction : %O", message)
       const siteModifie = {...this.state.site, ...message}
       this.setState({site: siteModifie}, _=>{console.debug("MAJ apres update : %O", this.state)})

@@ -12,6 +12,7 @@ function configurerEvenements(socket) {
       {eventName: 'publication/requeteListeCdns', callback: (params, cb) => {requeteListeCdns(socket, params, cb)}},
       {eventName: 'publication/requeteCleSsh', callback: (params, cb) => {requeteCleSsh(socket, params, cb)}},
       {eventName: 'publication/requeteForums', callback: (params, cb) => {requeteForums(socket, params, cb)}},
+      {eventName: 'publication/requeteSectionsSite', callback: (params, cb) => {requeteSectionsSite(socket, params, cb)}},
     ],
     listenersProteges: [
       {eventName: 'publication/creerSite', callback: (transaction, cb) => {
@@ -19,6 +20,9 @@ function configurerEvenements(socket) {
       }},
       {eventName: 'publication/majSite', callback: (transaction, cb) => {
         soumettreTransaction(socket, transaction, 'Publication.majSite', cb)
+      }},
+      {eventName: 'publication/majSection', callback: (transaction, cb) => {
+        soumettreTransaction(socket, transaction, 'Publication.majSection', cb)
       }},
       {eventName: 'publication/majPost', callback: (transaction, cb) => {
         soumettreTransaction(socket, transaction, 'Publication.majPost', cb)
@@ -96,6 +100,10 @@ function requeteCleSsh(socket, params, cb) {
 
 function requeteForums(socket, params, cb) {
   executerRequete('Forum.getForums', socket, params, cb)
+}
+
+function requeteSectionsSite(socket, params, cb) {
+  executerRequete('Publication.listeSectionsSite', socket, params, cb)
 }
 
 async function executerRequete(domaineAction, socket, params, cb) {

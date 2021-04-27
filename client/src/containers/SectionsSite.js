@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import {Row, Col, Button, ButtonGroup, Form, FormControl, InputGroup, Alert, Nav} from 'react-bootstrap'
 
 import {ChampInputMultilingue} from './InfoSite'
@@ -6,10 +6,15 @@ import {ChampInputMultilingue} from './InfoSite'
 export default class SectionsSite extends React.Component {
 
   state = {
-    sections: '',
+    listeSections: '',  // Liste ordonnee de section_id
 
+    sectionId: '',      // Section en cours de modification
+    typeSection: '',
+
+    // Contenu de reference (pick lists)
     collectionsPubliques: '',
     forums: '',
+    listeSectionsConnues: '',
 
     err: '',
     confirmation: '',
@@ -25,16 +30,37 @@ export default class SectionsSite extends React.Component {
     }).catch(err=>{this.setState({err: this.state.err + '\n' + err})})
 
     chargerForums(wsa, forums=>this.setState({forums}))
+    chargerSectionsConnues(wsa, this.props.site.site_id, listeSectionsConnues=>this.setState({listeSectionsConnues}))
+  }
+
+  setSectionId = event => {
+    const sectionId = event.currentTarget?event.currentTarget.value:event
+    this.setState({sectionId, typeSection: ''})
   }
 
   ajouterSection = event => {
     var typeSection = event.currentTarget.value
-    var sections = this.state.sections || this.props.site.sections || []
-    sections = [...sections]  // Shallow copy
+    this.setState({sectionId: true, typeSection})
+  }
 
-    const section = {type: typeSection}
-    sections.push(section)
-    this.setState({sections})
+  insererNouvelleSection = sectionId => {
+    var listeSections = this.state.listeSections || this.props.site.liste_sections || []
+    listeSections = [...listeSections, sectionId]
+    this.setState({listeSections})
+  }
+
+  activerSection = event => {
+    const value = event.currentTarget?event.currentTarget.value:event
+    var sections = this.state.listeSections || this.props.site.liste_sections || []
+    sections = [...sections, value]
+    this.setState({listeSections: sections})
+  }
+
+  desactiverSection = event => {
+    const value = event.currentTarget?event.currentTarget.value:event
+    var sections = this.state.listeSections || this.props.site.liste_sections || []
+    sections = sections.filter(item=>item!==value)
+    this.setState({listeSections: sections})
   }
 
   supprimerSection = event => {
@@ -113,53 +139,62 @@ export default class SectionsSite extends React.Component {
   }
 
   changerPositionSection = (idx, nouvellePosition) => {
-    var sections = this.state.sections || this.props.site.sections || []
+    var sections = this.state.listeSections || this.props.site.liste_sections || []
     const section = sections[idx]
     sections = sections.filter((item, idxSection)=>idxSection!==idx)
     sections.splice(nouvellePosition, 0, section)
-    this.setState({sections})
+    this.setState({listeSections: sections})
   }
 
   sauvegarder = async event => {
-    if(this.state.sections) {
-      console.debug("Sauvegarder : %O", this.state.sections)
-
-      // Conserver changements au formulaire
-      const domaineAction = 'Publication.majSite'
-      var transaction = {
-            site_id: this.props.siteId,
-            sections: this.state.sections,
-          }
-
-      try {
-        // const signateurTransaction = this.props.rootProps.signateurTransaction
-        // await signateurTransaction.preparerTransaction(transaction, domaineAction)
-        const webWorker = this.props.rootProps.chiffrageWorker
-        transaction = await webWorker.formatterMessage(transaction, domaineAction)
-        console.debug("Maj site %s, Transaction a soumettre : %O", this.props.siteId, transaction)
-
-        const wsa = this.props.rootProps.websocketApp
-        const reponse = await wsa.majSite(transaction)
-
-        this.setState({sections: ''}, _=>{
+    try {
+      if(this.state.listeSections) {
+        const connexionWorker = this.props.rootProps.connexionWorker,
+              siteId = this.props.site.site_id,
+              listeSections = this.state.listeSections
+        console.debug("Sauvegarder site %s : %O", siteId, this.state.listeSections)
+        const reponse = await sauvegarderSite(connexionWorker, siteId, listeSections)
+        this.setState({listeSections: ''}, _=>{
           console.debug("MAJ apres update : %O", this.state)
           this.setState({confirmation: "Mise a jour du site reussie"})
         })
-      } catch (err) {
-        this.setState({err})
       }
-    } else {
-      console.debug("Rien a sauvegarder")
+    } catch(err) {
+      console.error("Erreur : %O", err)
+      this.setState({err: ''+err})
     }
   }
 
   clearErreur = _ => this.setState({err: ''})
   clearConfirmation = _ => this.setState({confirmation: ''})
+  setErreur = err => this.setState({err})
+  setConfirmation = confirmation => this.setState({confirmation})
 
   render() {
 
     var sections = this.state.sections || this.props.site.sections || []
     var sectionsRendered = null
+
+    // Afficher la section a modifier
+    if(this.state.sectionId) {
+      return (
+        <AfficherSection sectionId={this.state.sectionId}
+                         typeSection={this.state.typeSection}
+                         retour={_=>this.setSectionId('')}
+                         site={this.props.site}
+                         collectionsPubliques={this.state.collectionsPubliques}
+                         forums={this.state.forums}
+                         languages={this.props.languages}
+                         setErreur={this.setErreur}
+                         setConfirmation={this.setConfirmation}
+                         insererNouvelleSection={this.insererNouvelleSection}
+                         rootProps={this.props.rootProps} />
+      )
+    }
+
+    const listeSections = this.state.listeSections || this.props.site.liste_sections || []
+    const listeSectionsConnues = this.state.listeSectionsConnues || []
+    console.debug("Liste sections connues : %O", listeSectionsConnues)
 
     return (
       <>
@@ -180,19 +215,48 @@ export default class SectionsSite extends React.Component {
           </Col>
         </Row>
 
-        {sections.map((section, idxRow)=>
-          <AfficherSection key={idxRow} idxRow={idxRow}
-                           configuration={section}
-                           sections={sections}
-                           changerChampMultilingue={this.changerChampMultilingue}
-                           toggleCheckbox={this.toggleCheckbox}
-                           toggleListValue={this.toggleListValue}
-                           collectionsPubliques={this.state.collectionsPubliques}
-                           forums={this.state.forums}
-                           supprimerSection={this.supprimerSection}
-                           changerPositionSection={this.changerPositionSection}
-                           {...this.props} />
-        )}
+        <h3>Sections actives</h3>
+        {listeSections.map((sectionId, idx)=>{
+          return (
+            <Row>
+              <Col>{sectionId}</Col>
+              <Col>
+                <ButtonGroup className="padding-droite">
+                  <Button variant="secondary" disabled={idx===0}
+                          onClick={_=>{this.changerPositionSection(idx, idx-1)}}>
+                    <i className="fa fa-arrow-up"/>
+                  </Button>
+                  <Button variant="secondary" disabled={idx===listeSections.length-1}
+                          onClick={_=>{this.changerPositionSection(idx, idx+1)}}>
+                    <i className="fa fa-arrow-down"/>
+                  </Button>
+                  <Button onClick={this.desactiverSection}
+                          value={sectionId}
+                          variant="secondary"
+                          disabled={!this.props.rootProps.modeProtege}>Desactiver</Button>
+                </ButtonGroup>
+              </Col>
+            </Row>
+          )
+        })}
+
+        <h3>Sections desactivees</h3>
+        {listeSectionsConnues
+            .filter(section=>!listeSections.includes(section.section_id))
+            .sort(trierSections)
+            .map((section, idx)=>{
+          return (
+            <Row>
+              <Col>{section.nom_section || section.section_id}</Col>
+              <Col>
+                <Button onClick={this.activerSection}
+                        value={section.section_id}
+                        variant="secondary"
+                        disabled={!this.props.rootProps.modeProtege}>Activer</Button>
+              </Col>
+            </Row>
+          )
+        })}
 
         <Row>
           <Col>
@@ -206,10 +270,57 @@ export default class SectionsSite extends React.Component {
 
 }
 
-function AfficherSection(props) {
-  var TypeSection = null
+function trierSections(a, b) {
+  if(a===b) return 0
 
-  switch(props.configuration.type) {
+  const nomA = a.nom || a.section_id
+  const nomB = b.nom || b.section_id
+
+  if(nomA === nomB) return 0
+  if(!nomA) return 1
+  if(!nomB) return -1
+  return nomA.localeCompare(nomB)
+}
+
+function AfficherSection(props) {
+
+  const [section, setSection] = useState('')
+  const [configuration, setConfiguration] = useState('')
+  useEffect(_=>{
+    if(props.sectionId !== true) {
+      chargerSection(props.rootProps.connexionWorker, props.sectionId, setSection)
+    } else {
+      // On a une nouvelle section
+      setSection({type: props.typeSection})
+    }
+  }, [])
+
+  if(!section) return <p>Chargement en cours</p>
+
+  const sauvegarder = async event => {
+    try {
+      if(configuration || props.sectionId === true) {
+        console.debug("Sauvegarder section")
+        const reponse = await sauvegarderSection(
+          props.rootProps.connexionWorker, props.sectionId, configuration,
+          {siteId: props.site.site_id, typeSection: props.typeSection}  // Pour nouvel enregistrement
+        )
+        console.debug("Reponse creation section : %O", reponse)
+        const sectionId = reponse.section.sectionId
+        props.insererNouvelleSection(sectionId)
+        props.setConfirmation("Changements sauvegarde avec succes")
+      } else {
+        console.debug("Aucun changement, on fait juste retour")
+        props.setConfirmation("Aucun changement n'a ete apporte.")
+      }
+    } catch(err) {
+      props.setErreur(''+err)
+    }
+    props.retour()
+  }
+
+  var TypeSection = null
+  switch(section.type) {
     case 'fichiers': TypeSection = SectionFichiers; break
     case 'album': TypeSection = SectionFichiers; break
     case 'pages': TypeSection = SectionVide; break
@@ -219,7 +330,7 @@ function AfficherSection(props) {
 
   const idxRow = props.idxRow
 
-  var entete = props.configuration.entete
+  var entete = section.entete
   if(!entete) {
     // Initialiser entete
     entete = {}
@@ -230,7 +341,7 @@ function AfficherSection(props) {
 
   return (
     <>
-      <h2>{idxRow+1}. Section {props.configuration.type}</h2>
+      <h2>Section {section.type}</h2>
       <Form.Group>
         <Form.Label>Titre affiche de la section</Form.Label>
         <ChampInputMultilingue languages={props.languages}
@@ -240,27 +351,14 @@ function AfficherSection(props) {
                                changerChamp={props.changerChampMultilingue} />
       </Form.Group>
 
-      <TypeSection {...props} />
+      <TypeSection section={section}
+                   {...props} />
 
-      <Form.Group>
-        <Form.Label>Actions sur la section</Form.Label>
-        <Form.Row>
-          <ButtonGroup className="padding-droite">
-            <Button variant="secondary" disabled={idxRow===0}
-                    onClick={_=>{props.changerPositionSection(idxRow, idxRow-1)}}>
-              <i className="fa fa-arrow-up"/>
-            </Button>
-            <Button variant="secondary" disabled={idxRow===props.sections.length-1}
-                    onClick={_=>{props.changerPositionSection(idxRow, idxRow+1)}}>
-              <i className="fa fa-arrow-down"/>
-            </Button>
-          </ButtonGroup>
-          <Button onClick={props.supprimerSection}
-                  value={idxRow}
-                  variant="danger"
-                  disabled={!props.rootProps.modeProtege}>Supprimer section</Button>
-        </Form.Row>
-      </Form.Group>
+      <Form.Row>
+        <Button onClick={sauvegarder}>Sauvegarder</Button>
+        <Button onClick={props.retour} variant="secondary">Annuler</Button>
+      </Form.Row>
+
     </>
   )
 }
@@ -271,24 +369,22 @@ function TypeSectionInconnue(props) {
 
 function SectionFichiers(props) {
 
-  const configuration = props.configuration,
-        idxRow = props.idxRow
+  const section = props.section
 
-  var toutesCollectionsInclues = configuration.toutes_collections?true:false
-  var collectionsSelectionnees = configuration.collections || []
+  var toutesCollectionsInclues = section.toutes_collections?true:false
+  var collectionsSelectionnees = section.collections || []
 
   var collectionsPubliques = ''
   if(!toutesCollectionsInclues && props.collectionsPubliques) {
     collectionsPubliques = props.collectionsPubliques.map(item=>{
       return (
         <Form.Row key={item.uuid}>
-          <Form.Check id={["collections-", idxRow, item.uuid].join('-')} key={item.uuid}
+          <Form.Check id={"collections-" + item.uuid} key={item.uuid}
                       type="checkbox"
                       label={item.nom_collection}
                       name="collections"
                       value={item.uuid}
                       checked={collectionsSelectionnees.includes(item.uuid)}
-                      data-row={idxRow}
                       onChange={props.toggleListValue} />
         </Form.Row>
       )
@@ -300,19 +396,17 @@ function SectionFichiers(props) {
       <Form.Row>
         <Form.Group as={Col} md={6} lg={5}>
           <Form.Label>Choix des collections de fichiers</Form.Label>
-          <Form.Check id={"collections-" + idxRow + "-toutes"}
+          <Form.Check id={"collections-toutes"}
                       type="radio"
                       label={"Toutes les collections publiques" + (props.site.securite==='2.prive'?' et privees':'')}
                       name="toutes_collections"
                       checked={toutesCollectionsInclues}
-                      data-row={idxRow}
                       onChange={props.toggleCheckbox} />
-          <Form.Check id={"collections-" + idxRow + '-selectionnees'}
+          <Form.Check id={'collections-selectionnees'}
                       type="radio"
                       label="Collections selectionnees uniquement"
                       name="toutes_collections"
                       checked={!toutesCollectionsInclues}
-                      data-row={idxRow}
                       onChange={props.toggleCheckbox} />
         </Form.Group>
 
@@ -337,11 +431,10 @@ function SectionVide(props) {
 
 function SectionForums(props) {
 
-  const configuration = props.configuration,
-        idxRow = props.idxRow
+  const section = props.section
 
-  var tousForumsInclus = configuration.tous_forums?true:false
-  var forumsSelectionnes = configuration.listeForums || []
+  var tousForumsInclus = section.tous_forums?true:false
+  var forumsSelectionnes = section.listeForums || []
   const niveauxSecurite = ['1.public']
   if(props.site.securite==='2.prive') niveauxSecurite.push('2.prive')
 
@@ -358,7 +451,6 @@ function SectionForums(props) {
                       name="listeForums"
                       value={item.forum_id}
                       checked={forumsSelectionnes.includes(item.forum_id)}
-                      data-row={idxRow}
                       onChange={props.toggleListValue} />
         </Form.Row>
       )
@@ -370,19 +462,17 @@ function SectionForums(props) {
       <Form.Row>
         <Form.Group as={Col} md={6} lg={5}>
           <Form.Label>Choix des forums</Form.Label>
-          <Form.Check id={"forums-" + idxRow + "-toutes"}
+          <Form.Check id={"forums--toutes"}
                       type="radio"
                       label={"Tous les forums publics" + (props.site.securite==='2.prive'?' et prives':'')}
                       name="tous_forums"
                       checked={tousForumsInclus}
-                      data-row={idxRow}
                       onChange={props.toggleCheckbox} />
-          <Form.Check id={"forums-" + idxRow + '-selectionnes'}
+          <Form.Check id={'forums--selectionnes'}
                       type="radio"
                       label="Forums selectionnes uniquement"
                       name="tous_forums"
                       checked={!tousForumsInclus}
-                      data-row={idxRow}
                       onChange={props.toggleCheckbox} />
         </Form.Group>
 
@@ -423,4 +513,41 @@ async function chargerForums(wsa, setForums) {
   const forums = await wsa.requeteForums()
   setForums(forums)
   console.debug("Forums charges : %O", forums)
+}
+
+async function chargerSectionsConnues(wsa, siteId, setSectionsConnues) {
+  const listeSections = await wsa.requeteSectionsSite(siteId)
+  console.debug("Sections pour site %s = %O", siteId, listeSections)
+  setSectionsConnues(listeSections)
+}
+
+async function chargerSection(connexionWorker, sectionId, setSection) {
+  const section = await connexionWorker.requeteSection({sectionId})
+  setSection(section)
+}
+
+async function sauvegarderSite(connexionWorker, siteId, listeSections) {
+  // Conserver changements au formulaire
+  // const domaineAction = 'Publication.majSite'
+  const transaction = {
+    site_id: siteId,
+    liste_sections: listeSections,
+  }
+
+  // const signateurTransaction = this.props.rootProps.signateurTransaction
+  // await signateurTransaction.preparerTransaction(transaction, domaineAction)
+  const reponse = await connexionWorker.majSite(transaction)
+}
+
+async function sauvegarderSection(connexionWorker, sectionId, configuration, opts) {
+  const transaction = {...configuration}
+  if(sectionId && sectionId !== true) {
+    // Site existant
+    transaction.section_id = sectionId
+  } else {
+    // Nouveau site
+    transaction.type_section = opts.typeSection
+    transaction.site_id = opts.siteId
+  }
+  return connexionWorker.majSection(transaction)
 }

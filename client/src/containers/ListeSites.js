@@ -54,21 +54,10 @@ export default class ListeSites extends React.Component {
 
   creerSite = async _ => {
     console.debug("Creer nouveau site")
-    // const domaineAction = 'Publication.majSite'
-    // var transaction = {}
-
-    // Signer transaction, soumettre
-    //const signateurTransaction = this.state.signateurTransaction
-    // const webWorker = this.props.rootProps.chiffrageWorker
-    // //await signateurTransaction.preparerTransaction(transaction, domaineAction)
-    // transaction = await webWorker.formatterMessage(transaction, domaineAction)
-    // const siteId = transaction['en-tete']['uuid_transaction']
-    // console.debug("Nouveau site, Transaction a soumettre : %O", transaction)
-
     const wsa = this.props.rootProps.connexionWorker
     try {
       const reponse = await wsa.creerSite({})
-      console.debug("Reponse nouveau site : %O", reponse)
+      // console.debug("Reponse nouveau site : %O", reponse)
       this.setState({siteId: reponse.site.site_id})
     } catch (err) {
       console.error("Erreur creer site : %O", err)
@@ -136,11 +125,11 @@ function AfficherListeSites(props) {
 }
 
 function majListeSites(message, sites) {
-
   const derniereModification = message['en-tete'].estampille
   const mappingMessage = {
     site_id: message.site_id || message['en-tete']['uuid_transaction'],
     nom_site: message.nom_site,
+    liste_sections: message.liste_sections,
     '_mg-derniere-modification': derniereModification,
   }
 
