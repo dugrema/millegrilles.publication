@@ -67,7 +67,11 @@ function Site(props) {
     <>
       <h2>Modifier pages de {props.site.nom_site}</h2>
 
-      <p>Choisir une section a modifier.</p>
+      {listeSections.length>0?
+        <p>Choisir une section a modifier.</p>:
+        <p>Il n'y a aucune section de type page pour ce site.</p>
+      }
+
       <Nav onSelect={setSectionId} className="flex-column">
         {listeSections.map(section=>{
           const nomSection = section.nom_section || section.section_id
@@ -99,10 +103,14 @@ function PageSection(props) {
     console.debug("Ajouter partie page de type %s", typeSelectionne)
     const sectionId = props.section.section_id,
           siteId = props.site.site_id
-    const partiePage = ajouterPartiePage(
+    const partiePage = await ajouterPartiePage(
       props.rootProps.connexionWorker, siteId, sectionId, typeSelectionne, partiesPage, setPartiesPage)
-    const listePartiesPageMaj = [...listePartiesPage, partiePage.partiepage_id]
-    setListePartiesPage(listePartiesPageMaj)
+    // const listePartiesPageMaj = [...listePartiesPage, partiePage.partiepage_id]
+    // setListePartiesPage(listePartiesPageMaj)
+  }
+
+  const boutonSauvegarderListe = event => {
+
   }
 
   const partiesPageDesactivees = partiesPage.filter(partiePage=>!listePartiesPage.includes(partiePage.partiepage_id))
@@ -112,6 +120,7 @@ function PageSection(props) {
     <>
       <h2>Modifier page</h2>
 
+      <Button>Sauvegarder modifications</Button>
       <Button variant="secondary" onClick={props.retour}>Retour</Button>
 
       <h3>Ajouter partie</h3>
@@ -138,7 +147,8 @@ function PageSection(props) {
 
       <h3>Sections desactivees</h3>
       {partiesPageDesactivees.map(partiePage=>{
-        return <RenderPartiePage partiePage={partiePage}
+        return <RenderPartiePage key={partiePage.partiepage_id}
+                                 partiePage={partiePage}
                                  site={props.site}
                                  section={props.section}
                                  rootProps={props.rootProps} />
@@ -175,7 +185,8 @@ async function chargerListeSites(connexionWorker, setListeSites) {
 
 async function chargerListeSections(connexionWorker, sectionId, setListeSections) {
   console.debug("Charger liste : %s", sectionId)
-  const sections = await connexionWorker.requeteSectionsSite(sectionId)
+  var sections = await connexionWorker.requeteSectionsSite(sectionId)
+  sections = sections.filter(section=>section.type_section === 'pages')
   setListeSections(sections)
 }
 
