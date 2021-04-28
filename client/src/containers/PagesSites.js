@@ -109,6 +109,20 @@ function PageSection(props) {
     // setListePartiesPage(listePartiesPageMaj)
   }
 
+  const activerPartiePage = event => {
+    const partipageId = event.currentTarget.value
+    if(!listePartiesPage.includes(partipageId)) {
+      setListePartiesPage([...listePartiesPage, partipageId])
+    }
+  }
+
+  const desactiverPartiePage = event => {
+    const partipageId = event.currentTarget.value
+    if(listePartiesPage.includes(partipageId)) {
+      setListePartiesPage(listePartiesPage.filter(item=>item!==partipageId))
+    }
+  }
+
   const boutonSauvegarderListe = event => {
 
   }
@@ -147,6 +161,8 @@ function PageSection(props) {
                                  active={true}
                                  partiesPage={partiesPage}
                                  setPartiesPage={setPartiesPage}
+                                 activerPartiePage={activerPartiePage}
+                                 desactiverPartiePage={desactiverPartiePage}
                                  rootProps={props.rootProps} />
       })}
 
@@ -159,6 +175,8 @@ function PageSection(props) {
                                  active={false}
                                  partiesPage={partiesPage}
                                  setPartiesPage={setPartiesPage}
+                                 activerPartiePage={activerPartiePage}
+                                 desactiverPartiePage={desactiverPartiePage}
                                  rootProps={props.rootProps} />
       })}
     </>
@@ -170,11 +188,16 @@ function RenderPartiePage(props) {
   const [editionEnCours, setEditionEnCours] = useState(false)
   const [contenuEditionEnCours, setContenuEditionEnCours] = useState('')
 
+  const partiePage = props.partiePage || {}
+  const type = partiePage.type_partie || ''
+
+  const partiepageId = partiePage.partiepage_id
+
   const sauvegarder = async event => {
     console.debug("Sauvegarder %O", contenuEditionEnCours)
     const sectionId = props.section.section_id
     const reponse = await majPartiePage(
-      props.rootProps.connexionWorker, props.partiePage.partiepage_id, contenuEditionEnCours,
+      props.rootProps.connexionWorker, partiepageId, contenuEditionEnCours,
       props.partiesPage, props.setPartiesPage
     )
     console.debug("Reponse maj section : %O", reponse)
@@ -182,8 +205,6 @@ function RenderPartiePage(props) {
     setEditionEnCours(false)
   }
 
-  const partiePage = props.partiePage || {}
-  const type = partiePage.type_partie || ''
   var TypePage = TypePartiePageInconnu
   switch(type) {
     case 'texte': TypePage = PageTypeTexte; break
@@ -216,9 +237,9 @@ function RenderPartiePage(props) {
             }
 
             {props.active?
-              <Button variant="secondary">Desactiver</Button>
+              <Button variant="secondary" onClick={props.desactiverPartiePage} value={partiepageId}>Desactiver</Button>
               :
-              <Button variant="secondary">Activer</Button>
+              <Button variant="secondary" onClick={props.activerPartiePage} value={partiepageId}>Activer</Button>
             }
 
           </ButtonGroup>
