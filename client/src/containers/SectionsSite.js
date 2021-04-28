@@ -267,7 +267,7 @@ function AfficherSection(props) {
   const sauvegarder = async event => {
     try {
       if(configuration || props.sectionId === true) {
-        console.debug("Sauvegarder section")
+        console.debug("Sauvegarder section, configuration %O", configuration)
         const reponse = await sauvegarderSection(
           props.rootProps.connexionWorker, props.sectionId, configuration,
           {siteId: props.site.site_id, typeSection: props.typeSection}  // Pour nouvel enregistrement
@@ -329,50 +329,54 @@ function AfficherSection(props) {
     setConfiguration(configurationCourante)
   }
 
-  // toggleCheckbox = event => {
-  //   const name = event.currentTarget.name
-  //   const idxRow = event.currentTarget.dataset.row
-  //   // console.debug("Toggle checkbox %s, row:%s", name, idxRow)
-  //
-  //   var sections = this.state.sections || this.props.site.sections
-  //   sections = [...sections]  // Shallow copy
-  //
-  //   // Copier row
-  //   var row = {...sections[idxRow]}
-  //   sections[idxRow] = row
-  //
-  //   row[name] = row[name]?false:true  // Inverser value, null == false => true
-  //
-  //   this.setState({sections}, _=>{console.debug("Status updated : %O", this.state)})
-  // }
-  //
-  // toggleListValue = event => {
-  //   // Toggle le contenu d'un element dans une liste (ajoute ou retire l'element)
-  //   const {name, value} = event.currentTarget
-  //   const idxRow = event.currentTarget.dataset.row
-  //
-  //   console.debug("Toggle checkbox %s, row:%s = %s", name, idxRow, value)
-  //
-  //   var sections = this.state.sections || this.props.site.sections
-  //   sections = [...sections]  // Shallow copy
-  //
-  //   // Copier row
-  //   var row = {...sections[idxRow]}
-  //   sections[idxRow] = row
-  //
-  //   var list = row[name] || []
-  //   if(list.includes(value)) {
-  //     // Retirer la valeur
-  //     list = list.filter(item=>item!==value)
-  //   } else {
-  //     // Ajouter la valeur
-  //     list.push(value)
-  //   }
-  //
-  //   row[name] = list
-  //
-  //   this.setState({sections}, _=>{console.debug("Status updated : %O", this.state)})
-  // }
+  const toggleCheckbox = event => {
+    const name = event.currentTarget.name
+    console.debug("Toggle checkbox %s", name)
+
+    const configurationCourante = {...configuration},
+          section = props.section || {}
+
+    // Toggle valeur
+    let valeur = configurationCourante[name] || section[name] || []
+    if(valeur === undefined) valeur = false
+    configurationCourante[name] = valeur?false:true  // Inverser value, null == false => true
+
+    setConfiguration(configurationCourante)
+  }
+
+  const changerChampBool = event => {
+    const {name, value} = event.currentTarget
+    console.debug("Changer champ %s=%s", name, value)
+    const configurationCourante = {...configuration},
+          section = props.section || {}
+
+    // Changer valeur bool
+    configurationCourante[name] = value==='true'?true:false
+
+    console.debug("Configuration courante : %O", configurationCourante)
+    setConfiguration(configurationCourante)
+  }
+
+  const toggleListValue = event => {
+    // Toggle le contenu d'un element dans une liste (ajoute ou retire l'element)
+    const {name, value} = event.currentTarget
+
+    // console.debug("Toggle checkbox %s = %s", name, value)
+
+    const configurationCourante = {...configuration},
+          section = props.section || {}
+
+    let list = configurationCourante[name] || section[name] || []
+    list = [...list]  // Shallow copy
+
+    // Ajouter ou retirer la valeur (toggle)
+    if(list.includes(value)) {list = list.filter(item=>item!==value)}
+    else {list.push(value)}
+
+    configurationCourante[name] = list
+
+    setConfiguration(configurationCourante)
+  }
 
   return (
     <>
@@ -386,6 +390,9 @@ function AfficherSection(props) {
       </Form.Group>
 
       <TypeSection section={section}
+                   configuration={configuration}
+                   changerChampBool={changerChampBool}
+                   toggleListValue={toggleListValue}
                    {...props} />
 
       <Form.Row>
@@ -403,10 +410,19 @@ function TypeSectionInconnue(props) {
 
 function SectionFichiers(props) {
 
-  const section = props.section
+  const section = props.section,
+        configuration = props.configuration  // valeurs en memoire
 
-  var toutesCollectionsInclues = section.toutes_collections?true:false
-  var collectionsSelectionnees = section.collections || []
+  console.debug("!!! section: %O, configuration: %O", section, configuration)
+
+  let toutesCollectionsInclues = null
+  if(configuration.toutes_collections !== undefined) {
+    toutesCollectionsInclues = configuration.toutes_collections?true:false
+  } else {
+    toutesCollectionsInclues = section.toutes_collections?true:false
+  }
+
+  var collectionsSelectionnees = configuration.collections || section.collections || []
 
   var collectionsPubliques = ''
   if(!toutesCollectionsInclues && props.collectionsPubliques) {
@@ -435,13 +451,15 @@ function SectionFichiers(props) {
                       label={"Toutes les collections publiques" + (props.site.securite==='2.prive'?' et privees':'')}
                       name="toutes_collections"
                       checked={toutesCollectionsInclues}
-                      onChange={props.toggleCheckbox} />
+                      value="true"
+                      onChange={props.changerChampBool} />
           <Form.Check id={'collections-selectionnees'}
                       type="radio"
                       label="Collections selectionnees uniquement"
                       name="toutes_collections"
                       checked={!toutesCollectionsInclues}
-                      onChange={props.toggleCheckbox} />
+                      value="false"
+                      onChange={props.changerChampBool} />
         </Form.Group>
 
         {!toutesCollectionsInclues?
