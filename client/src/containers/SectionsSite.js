@@ -35,6 +35,7 @@ export default class SectionsSite extends React.Component {
 
   setSectionId = event => {
     const sectionId = event.currentTarget?event.currentTarget.value:event
+    console.debug("Set sectionId: %s", sectionId)
     this.setState({sectionId, typeSection: ''})
   }
 
@@ -44,9 +45,19 @@ export default class SectionsSite extends React.Component {
   }
 
   insererNouvelleSection = sectionId => {
+    if(!sectionId) return
     var listeSections = this.state.listeSections || this.props.site.liste_sections || []
     listeSections = [...listeSections, sectionId]
     this.setState({listeSections})
+  }
+
+  majSectionSite = section => {
+    // Met a jour la section en memoire suite a une modification (confirmee)
+    var listeSectionsConnues = this.state.listeSectionsConnues.map(item=>{
+      if(item.section_id === section.section_id) return section
+      return item
+    })
+    this.setState({listeSectionsConnues})
   }
 
   activerSection = event => {
@@ -69,73 +80,6 @@ export default class SectionsSite extends React.Component {
     var sections = this.state.sections || this.props.site.sections || []
     sections = sections.filter((_, idx)=>''+idx!==idxSection)
     this.setState({sections})
-  }
-
-  changerChampMultilingue = event => {
-    const {name, value} = event.currentTarget
-    const langue = event.currentTarget.dataset.langue
-    const idxRow = event.currentTarget.dataset.row
-
-    // console.debug("Changement champ %s, row:%s, langue:%s = %s", name, idxRow, langue, value)
-
-    var sections = this.state.sections || this.props.site.sections
-    sections = [...sections]  // Shallow copy
-
-    // Copier row
-    var row = {...sections[idxRow]}
-    sections[idxRow] = row
-
-    // Copier valeur multilingue, remplacer valeur dans langue appropriee
-    var valeurMultilingue = {...row[name]}
-    valeurMultilingue[langue] = value
-    row[name] = valeurMultilingue
-
-    this.setState({sections})
-  }
-
-  toggleCheckbox = event => {
-    const name = event.currentTarget.name
-    const idxRow = event.currentTarget.dataset.row
-    // console.debug("Toggle checkbox %s, row:%s", name, idxRow)
-
-    var sections = this.state.sections || this.props.site.sections
-    sections = [...sections]  // Shallow copy
-
-    // Copier row
-    var row = {...sections[idxRow]}
-    sections[idxRow] = row
-
-    row[name] = row[name]?false:true  // Inverser value, null == false => true
-
-    this.setState({sections}, _=>{console.debug("Status updated : %O", this.state)})
-  }
-
-  toggleListValue = event => {
-    // Toggle le contenu d'un element dans une liste (ajoute ou retire l'element)
-    const {name, value} = event.currentTarget
-    const idxRow = event.currentTarget.dataset.row
-
-    console.debug("Toggle checkbox %s, row:%s = %s", name, idxRow, value)
-
-    var sections = this.state.sections || this.props.site.sections
-    sections = [...sections]  // Shallow copy
-
-    // Copier row
-    var row = {...sections[idxRow]}
-    sections[idxRow] = row
-
-    var list = row[name] || []
-    if(list.includes(value)) {
-      // Retirer la valeur
-      list = list.filter(item=>item!==value)
-    } else {
-      // Ajouter la valeur
-      list.push(value)
-    }
-
-    row[name] = list
-
-    this.setState({sections}, _=>{console.debug("Status updated : %O", this.state)})
   }
 
   changerPositionSection = (idx, nouvellePosition) => {
@@ -194,6 +138,7 @@ export default class SectionsSite extends React.Component {
                          setErreur={this.setErreur}
                          setConfirmation={this.setConfirmation}
                          insererNouvelleSection={this.insererNouvelleSection}
+                         majSectionSite={this.majSectionSite}
                          rootProps={this.props.rootProps} />
       )
     }
@@ -223,11 +168,15 @@ export default class SectionsSite extends React.Component {
 
         <h3>Sections actives</h3>
         {listeSections.map((sectionId, idx)=>{
+          var section = listeSectionsConnues.filter(item=>item.section_id===sectionId)
+          if(section && section.length === 1) section = section[0]
+          else section = {}
+
           return (
             <Row>
               <Col>
                 <Button variant="link" onClick={this.setSectionId} value={sectionId}>
-                  {sectionId}
+                  <RenderChampMultilingue champ={section.entete} defaut={sectionId} />
                 </Button>
               </Col>
               <Col>
@@ -261,7 +210,7 @@ export default class SectionsSite extends React.Component {
             <Row>
               <Col>
                 <Button variant="link" onClick={this.setSectionId} value={section.section_id}>
-                  {nomSection}
+                  <RenderChampMultilingue champ={section.entete} defaut={section.section_id} />
                 </Button>
               </Col>
               <Col>
@@ -299,10 +248,11 @@ function trierSections(a, b) {
 }
 
 function AfficherSection(props) {
+  const [configuration, setConfiguration] = useState('')
 
   const section = props.section || {type: props.typeSection}
-  console.debug("Section : %O", section)
-  const [configuration, setConfiguration] = useState('')
+  // console.debug("Section : %O", section)
+  if(!props.sectionId) return ''
 
   if(!section) return <p>Chargement en cours</p>
 
@@ -314,9 +264,13 @@ function AfficherSection(props) {
           props.rootProps.connexionWorker, props.sectionId, configuration,
           {siteId: props.site.site_id, typeSection: props.typeSection}  // Pour nouvel enregistrement
         )
-        console.debug("Reponse creation section : %O", reponse)
+        console.debug("Reponse creation/maj section : %O", reponse)
         const sectionId = reponse.section.sectionId
-        props.insererNouvelleSection(sectionId)
+        if(props.sectionId === true) {
+          console.debug("Ajout nouvelle section id: %s", sectionId)
+          props.insererNouvelleSection(sectionId)
+        }
+        props.majSectionSite(reponse.section)
         props.setConfirmation("Changements sauvegarde avec succes")
       } else {
         console.debug("Aucun changement, on fait juste retour")
@@ -339,7 +293,7 @@ function AfficherSection(props) {
 
   const idxRow = props.idxRow
 
-  var entete = section.entete
+  var entete = configuration.entete || section.entete
   if(!entete) {
     // Initialiser entete
     entete = {}
@@ -347,6 +301,69 @@ function AfficherSection(props) {
       entete[langue] = ''
     })
   }
+
+  const changerChampMultilingue = event => {
+    const {name, value} = event.currentTarget
+    const langue = event.currentTarget.dataset.langue
+    // console.debug("Changer %s[%s]= %s", name, langue, value)
+
+    var configurationCourante = {...configuration}
+    var valeur = configurationCourante[name] || props.section[name] || {}
+
+    // Copier valeur multilingue, remplacer valeur dans langue appropriee
+    var valeurMultilingue = {...valeur}
+    valeurMultilingue[langue] = value
+    configurationCourante[name] = valeurMultilingue
+
+    // console.debug("Configuration updatee : %O", configurationCourante)
+
+    setConfiguration(configurationCourante)
+  }
+
+  // toggleCheckbox = event => {
+  //   const name = event.currentTarget.name
+  //   const idxRow = event.currentTarget.dataset.row
+  //   // console.debug("Toggle checkbox %s, row:%s", name, idxRow)
+  //
+  //   var sections = this.state.sections || this.props.site.sections
+  //   sections = [...sections]  // Shallow copy
+  //
+  //   // Copier row
+  //   var row = {...sections[idxRow]}
+  //   sections[idxRow] = row
+  //
+  //   row[name] = row[name]?false:true  // Inverser value, null == false => true
+  //
+  //   this.setState({sections}, _=>{console.debug("Status updated : %O", this.state)})
+  // }
+  //
+  // toggleListValue = event => {
+  //   // Toggle le contenu d'un element dans une liste (ajoute ou retire l'element)
+  //   const {name, value} = event.currentTarget
+  //   const idxRow = event.currentTarget.dataset.row
+  //
+  //   console.debug("Toggle checkbox %s, row:%s = %s", name, idxRow, value)
+  //
+  //   var sections = this.state.sections || this.props.site.sections
+  //   sections = [...sections]  // Shallow copy
+  //
+  //   // Copier row
+  //   var row = {...sections[idxRow]}
+  //   sections[idxRow] = row
+  //
+  //   var list = row[name] || []
+  //   if(list.includes(value)) {
+  //     // Retirer la valeur
+  //     list = list.filter(item=>item!==value)
+  //   } else {
+  //     // Ajouter la valeur
+  //     list.push(value)
+  //   }
+  //
+  //   row[name] = list
+  //
+  //   this.setState({sections}, _=>{console.debug("Status updated : %O", this.state)})
+  // }
 
   return (
     <>
@@ -356,8 +373,7 @@ function AfficherSection(props) {
         <ChampInputMultilingue languages={props.languages}
                                name="entete"
                                values={entete}
-                               idxRow={idxRow}
-                               changerChamp={props.changerChampMultilingue} />
+                               changerChamp={changerChampMultilingue} />
       </Form.Group>
 
       <TypeSection section={section}
@@ -554,4 +570,16 @@ async function sauvegarderSection(connexionWorker, sectionId, configuration, opt
     transaction.site_id = opts.siteId
   }
   return connexionWorker.majSection(transaction)
+}
+
+function RenderChampMultilingue(props) {
+  const champ = props.champ
+  if(champ) {
+    const langues = Object.keys(champ)
+    langues.sort()
+    return langues.map(l=>''+l+':'+champ[l]).join('/')
+  } else {
+    return props.defaut || ''
+  }
+  return ''
 }
