@@ -50,6 +50,10 @@ function requeteForums() {
   return connexionClient.emitBlocking('publication/requeteForums', {})
 }
 
+function requetePartiesPage(sectionId) {
+  return connexionClient.emitBlocking('publication/requetePartiesPage', {section_id: sectionId})
+}
+
 // Commandes
 
 function creerSite(transaction) {
@@ -78,7 +82,7 @@ comlinkExpose({
 
   requeteSites, requeteSite, requetePosts, requeteNoeudsPublics,
   requeteCollectionsPubliques, requeteListeCdns, requeteCleSsh,
-  requeteForums, requeteSectionsSite, requeteSection,
+  requeteForums, requeteSectionsSite, requeteSection, requetePartiesPage,
 
   creerSite, majSite, majSection, majCdn, supprimerCdn,
 })

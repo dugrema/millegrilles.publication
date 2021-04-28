@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react'
 import {Row, Col, Button, ButtonGroup, Form, FormControl, InputGroup, Alert, Nav} from 'react-bootstrap'
 
 import {ChampInputMultilingue} from './InfoSite'
+import {RenderChampMultilingue} from './ComponentMultilingue'
 
 export default class SectionsSite extends React.Component {
 
@@ -603,16 +604,4 @@ async function sauvegarderSection(connexionWorker, sectionId, configuration, opt
     transaction.site_id = opts.siteId
   }
   return connexionWorker.majSection(transaction)
-}
-
-function RenderChampMultilingue(props) {
-  const champ = props.champ
-  if(champ) {
-    const langues = Object.keys(champ)
-    langues.sort()
-    return langues.map(l=>''+l+':'+champ[l]).join('/')
-  } else {
-    return props.defaut || ''
-  }
-  return ''
 }
