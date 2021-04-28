@@ -46,6 +46,7 @@ export default class SectionsSite extends React.Component {
 
   insererNouvelleSection = sectionId => {
     if(!sectionId) return
+    console.debug("!!! Inserer nouvelle section : %s", sectionId)
     var listeSections = this.state.listeSections || this.props.site.liste_sections || []
     listeSections = [...listeSections, sectionId]
     this.setState({listeSections})
@@ -53,10 +54,17 @@ export default class SectionsSite extends React.Component {
 
   majSectionSite = section => {
     // Met a jour la section en memoire suite a une modification (confirmee)
+    let trouve = false
     var listeSectionsConnues = this.state.listeSectionsConnues.map(item=>{
-      if(item.section_id === section.section_id) return section
+      if(item.section_id === section.section_id) {
+        trouve = true
+        return section
+      }
       return item
     })
+    if(!trouve) {
+      listeSectionsConnues.push(section)
+    }
     this.setState({listeSectionsConnues})
   }
 
@@ -74,13 +82,13 @@ export default class SectionsSite extends React.Component {
     this.setState({listeSections: sections})
   }
 
-  supprimerSection = event => {
-    var idxSection = event.currentTarget.value
-    console.debug("Supprimer section idx: %s", idxSection)
-    var sections = this.state.sections || this.props.site.sections || []
-    sections = sections.filter((_, idx)=>''+idx!==idxSection)
-    this.setState({sections})
-  }
+  // supprimerSection = event => {
+  //   var idxSection = event.currentTarget.value
+  //   console.debug("Supprimer section idx: %s", idxSection)
+  //   var sections = this.state.sections || this.props.site.sections || []
+  //   sections = sections.filter((_, idx)=>''+idx!==idxSection)
+  //   this.setState({sections})
+  // }
 
   changerPositionSection = (idx, nouvellePosition) => {
     var sections = this.state.listeSections || this.props.site.liste_sections || []
@@ -308,7 +316,8 @@ function AfficherSection(props) {
     // console.debug("Changer %s[%s]= %s", name, langue, value)
 
     var configurationCourante = {...configuration}
-    var valeur = configurationCourante[name] || props.section[name] || {}
+    var section = props.section || {}
+    var valeur = configurationCourante[name] || section[name] || {}
 
     // Copier valeur multilingue, remplacer valeur dans langue appropriee
     var valeurMultilingue = {...valeur}

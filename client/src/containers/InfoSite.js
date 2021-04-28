@@ -407,7 +407,7 @@ export function ChampInputMultilingue(props) {
           <InputGroup.Text>{langue}</InputGroup.Text>
         </InputGroup.Prepend>
         <FormControl name={nomChamp}
-                     value={props.values[langue]}
+                     value={props.values[langue] || ''}
                      data-row={props.idxRow}
                      data-langue={langue}
                      onChange={props.changerChamp} />
