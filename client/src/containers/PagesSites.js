@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react'
 import {Row, Col, Nav, Button, ButtonGroup, InputGroup, Form} from 'react-bootstrap'
 import parse from 'html-react-parser'
 
-import {RenderChampMultilingue, ChampSummernoteMultilingue} from './ComponentMultilingue'
+import {RenderChampMultilingue, ChampSummernoteMultilingue, RenderValeursMultilingueRows} from './ComponentMultilingue'
 
 export default function PagesSites(props) {
 
@@ -144,6 +144,9 @@ function PageSection(props) {
         return <RenderPartiePage partiePage={partiePage}
                                  site={props.site}
                                  section={props.section}
+                                 active={true}
+                                 partiesPage={partiesPage}
+                                 setPartiesPage={setPartiesPage}
                                  rootProps={props.rootProps} />
       })}
 
@@ -153,6 +156,9 @@ function PageSection(props) {
                                  partiePage={partiePage}
                                  site={props.site}
                                  section={props.section}
+                                 active={false}
+                                 partiesPage={partiesPage}
+                                 setPartiesPage={setPartiesPage}
                                  rootProps={props.rootProps} />
       })}
     </>
@@ -162,6 +168,19 @@ function PageSection(props) {
 function RenderPartiePage(props) {
 
   const [editionEnCours, setEditionEnCours] = useState(false)
+  const [contenuEditionEnCours, setContenuEditionEnCours] = useState('')
+
+  const sauvegarder = async event => {
+    console.debug("Sauvegarder %O", contenuEditionEnCours)
+    const sectionId = props.section.section_id
+    const reponse = await majPartiePage(
+      props.rootProps.connexionWorker, props.partiePage.partiepage_id, contenuEditionEnCours,
+      props.partiesPage, props.setPartiesPage
+    )
+    console.debug("Reponse maj section : %O", reponse)
+    setContenuEditionEnCours('')
+    setEditionEnCours(false)
+  }
 
   const partiePage = props.partiePage || {}
   const type = partiePage.type_partie || ''
@@ -178,24 +197,30 @@ function RenderPartiePage(props) {
       <Row>
         <Col>
           <ButtonGroup>
-            <Button>
+
+            <Button variant="secondary" disabled={!props.active}>
               <i className="fa fa-arrow-up"/>
             </Button>
-            <Button>
+
+            <Button variant="secondary" disabled={!props.active}>
               <i className="fa fa-arrow-down"/>
             </Button>
+
             {editionEnCours?
               <>
-                <Button>Sauvegarder</Button>
-                <Button onClick={_=>setEditionEnCours(false)}>Annuler</Button>
+                <Button onClick={sauvegarder}>Sauvegarder</Button>
+                <Button variant="secondary" onClick={_=>setEditionEnCours(false)}>Annuler</Button>
               </>
               :
-              <Button onClick={_=>setEditionEnCours(true)}>Editer</Button>
+              <Button variant="secondary" onClick={_=>setEditionEnCours(true)}>Editer</Button>
             }
 
-            <Button>
-              Activer/desactiver
-            </Button>
+            {props.active?
+              <Button variant="secondary">Desactiver</Button>
+              :
+              <Button variant="secondary">Activer</Button>
+            }
+
           </ButtonGroup>
         </Col>
       </Row>
@@ -203,7 +228,10 @@ function RenderPartiePage(props) {
       <TypePage partiePage={partiePage}
                 site={props.site}
                 section={props.section}
+                active={props.active}
                 editionEnCours={editionEnCours}
+                contenuEditionEnCours={contenuEditionEnCours}
+                setContenuEditionEnCours={setContenuEditionEnCours}
                 rootProps={props.rootProps} />
     </>
   )
@@ -211,22 +239,42 @@ function RenderPartiePage(props) {
 
 function PageTypeTexte(props) {
 
+  const contenuEditionEnCours = props.contenuEditionEnCours || ''
+  const html = contenuEditionEnCours.html || props.partiePage.html || props.site.languages.reduce((acc, item)=>{
+    acc[item] = ''
+    return acc
+  }, {})
+
+  const changerContenu = params => {
+    // console.debug("Changer contenu texte summernote : %O", params)
+    const htmlEdit = {...html} // Shallow copy
+    htmlEdit[params.langue] = params.value
+    const contenuEdit = {...contenuEditionEnCours, html: htmlEdit}
+    props.setContenuEditionEnCours(contenuEdit)
+  }
+
   if(props.editionEnCours) {
+    // console.debug("!!!PROPS editionEnCours: %O", props)
     return (
-      <p>Editeur</p>
+      <ChampSummernoteMultilingue name="html"
+                                  languages={props.site.languages}
+                                  values={html}
+                                  onChange={changerContenu} />
     )
   }
 
-  const html = props.section.html
   var htmlParsed = null
   if(html) {
     htmlParsed = Object.keys(html).reduce((acc, lang)=>{
       acc[lang] = parse(html[lang])
+      return acc
     }, {})
   }
 
+  console.debug("Afficher html %O, htmlParsed: %O", html, htmlParsed)
+
   return (
-    <RenderChampMultilingue champ={htmlParsed} />
+    <RenderValeursMultilingueRows champ={htmlParsed} languages={props.site.languages}/>
   )
 }
 
@@ -277,6 +325,8 @@ async function majPartiePage(connexionWorker, partiePageId, configuration, parti
   const reponse = await connexionWorker.majPartiePage(partiePageId, configuration)
   console.debug("Reponse majPartiePage: %O", reponse)
   const partiePage = reponse.partie_page
+
+  console.debug("PartiesPage existant : %O", partiesPage)
   partiesPage = partiesPage.map(item=>{
     if(item.partiepage_id === partiePage.partiepage_id) return partiePage
     return item

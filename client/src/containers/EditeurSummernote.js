@@ -18,10 +18,7 @@ export default class EditeurSummernote extends React.Component {
   }
 
   onChange = content => {
-    const post_id = this.props.post_id,
-          langue = this.props.langue
-
-    this.props.onChange(post_id, langue, content)
+    this.props.onChange({...this.props, value: content})
   }
 
   render() {
