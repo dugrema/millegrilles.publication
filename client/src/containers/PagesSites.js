@@ -95,20 +95,26 @@ function PageSection(props) {
     chargerPartiesPages(props.rootProps.connexionWorker, props.section.section_id, setPartiesPage)
   }, [])
 
-  const ajouterSection = event => {
-    console.debug("Ajouter section de type %s", typeSelectionne)
+  const boutonAjouterPartiePage = async event => {
+    console.debug("Ajouter partie page de type %s", typeSelectionne)
+    const sectionId = props.section.section_id,
+          siteId = props.site.site_id
+    const partiePage = ajouterPartiePage(
+      props.rootProps.connexionWorker, siteId, sectionId, typeSelectionne, partiesPage, setPartiesPage)
+    const listePartiesPageMaj = [...listePartiesPage, partiePage.partiepage_id]
+    setListePartiesPage(listePartiesPageMaj)
   }
 
-  const sectionsDesactivees = partiesPage.filter(partiePage=>!listePartiesPage.includes(partiePage.partiepage_id))
+  const partiesPageDesactivees = partiesPage.filter(partiePage=>!listePartiesPage.includes(partiePage.partiepage_id))
+  console.debug("Parties page desactivees : %O", partiesPageDesactivees)
 
   return (
     <>
       <h2>Modifier page</h2>
 
-      <p>Page section</p>
       <Button variant="secondary" onClick={props.retour}>Retour</Button>
 
-      <h3>Ajouter section</h3>
+      <h3>Ajouter partie</h3>
 
       <InputGroup>
         <Form.Control as="select" name="typeSection" onChange={event=>{setTypeSelectionne(event.currentTarget.value)}}>
@@ -117,13 +123,13 @@ function PageSection(props) {
           <option value="media">Media (1 image ou video)</option>
         </Form.Control>
         <InputGroup.Append>
-          <Button variant="secondary" onClick={ajouterSection}>Ajouter</Button>
+          <Button variant="secondary" onClick={boutonAjouterPartiePage}>Ajouter</Button>
         </InputGroup.Append>
       </InputGroup>
 
       <h3>Page</h3>
       {listePartiesPage.map(partiePageId=>{
-        const partiePage = listePartiesPage.filter(item=>item.partiepage_id===partiePageId)[0]
+        const partiePage = partiesPage.filter(item=>item.partiepage_id===partiePageId)[0]
         return <RenderPartiePage partiePage={partiePage}
                                  site={props.site}
                                  section={props.section}
@@ -131,7 +137,7 @@ function PageSection(props) {
       })}
 
       <h3>Sections desactivees</h3>
-      {sectionsDesactivees.map(partiePage=>{
+      {partiesPageDesactivees.map(partiePage=>{
         return <RenderPartiePage partiePage={partiePage}
                                  site={props.site}
                                  section={props.section}
@@ -143,11 +149,13 @@ function PageSection(props) {
 
 function RenderPartiePage(props) {
   var TypePage = TypePartiePageInconnu
-  switch(props.partiePage.type) {
+  const partiePage = props.partiePage || {}
+  const type = partiePage.type || ''
+  switch(type) {
     default: TypePage = TypePartiePageInconnu
   }
 
-  return <TypePage partiePage={props.partiePage}
+  return <TypePage partiePage={partiePage}
                    site={props.site}
                    section={props.section}
                    rootProps={props.rootProps} />
@@ -175,4 +183,26 @@ async function chargerPartiesPages(connexionWorker, sectionId, setPartiesPages) 
   const partiesPage = await connexionWorker.requetePartiesPage(sectionId)
   setPartiesPages(partiesPage)
   console.debug("Parties page: %O", partiesPage)
+}
+
+async function ajouterPartiePage(connexionWorker, siteId, sectionId, typePartie, partiesPage, setPartiesPage) {
+  console.debug("Ajouter partiePage siteId %s, sectionId %s, type %s", siteId, sectionId, typePartie)
+  const reponse = await connexionWorker.ajouterPartiePage(siteId, sectionId, typePartie)
+  console.debug("Reponse ajouterPartiePage: %O", reponse)
+  const partiePage = reponse.partie_page
+  partiesPage = [...partiesPage, reponse.partie_page]
+  setPartiesPage(partiesPage)
+  return partiePage
+}
+
+async function majPartiePage(connexionWorker, partiePageId, configuration, partiesPage, setPartiesPage) {
+  const reponse = await connexionWorker.majPartiePage(partiePageId, configuration)
+  console.debug("Reponse majPartiePage: %O", reponse)
+  const partiePage = reponse.partie_page
+  partiesPage = partiesPage.map(item=>{
+    if(item.partiepage_id === partiePage.partiepage_id) return partiePage
+    return item
+  })
+  setPartiesPage(partiesPage)
+  return partiePage
 }

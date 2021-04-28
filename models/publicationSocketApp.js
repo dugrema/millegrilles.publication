@@ -34,6 +34,9 @@ function configurerEvenements(socket) {
       {eventName: 'publication/supprimerCdn', callback: (transaction, cb) => {
         soumettreTransaction(socket, transaction, 'Publication.supprimerCdn', cb)
       }},
+      {eventName: 'publication/majPartiePage', callback: (transaction, cb) => {
+        soumettreTransaction(socket, transaction, 'Publication.majPartiePage', cb)
+      }},
     ]
   }
 

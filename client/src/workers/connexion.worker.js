@@ -68,6 +68,25 @@ function majSection(transaction) {
   return connexionClient.emitBlocking('publication/majSection', transaction, {domaine: 'Publication.majSection'})
 }
 
+function ajouterPartiePage(siteId, sectionId, typePartie) {
+  const transaction = {
+    site_id: siteId,
+    section_id: sectionId,
+    type_partie: typePartie,
+  }
+  return connexionClient.emitBlocking(
+    'publication/majPartiePage', transaction, {domaine: 'Publication.majPartiePage'})
+}
+
+function majPartiePage(partiePageId, configuration) {
+  const transaction = {
+    ...configuration,
+    partiepage_id: partiePageId,
+  }
+  return connexionClient.emitBlocking(
+    'publication/majPartiePage', transaction, {domaine: 'Publication.majPartiePage'})
+}
+
 function majCdn(params) {
   return connexionClient.emitBlocking('publication/majCdn', params)
 }
@@ -85,4 +104,5 @@ comlinkExpose({
   requeteForums, requeteSectionsSite, requeteSection, requetePartiesPage,
 
   creerSite, majSite, majSection, majCdn, supprimerCdn,
+  ajouterPartiePage, majPartiePage,
 })
