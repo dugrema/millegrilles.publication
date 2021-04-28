@@ -46,7 +46,6 @@ export default class SectionsSite extends React.Component {
 
   insererNouvelleSection = sectionId => {
     if(!sectionId) return
-    console.debug("!!! Inserer nouvelle section : %s", sectionId)
     var listeSections = this.state.listeSections || this.props.site.liste_sections || []
     listeSections = [...listeSections, sectionId]
     this.setState({listeSections})
@@ -413,8 +412,6 @@ function SectionFichiers(props) {
   const section = props.section,
         configuration = props.configuration  // valeurs en memoire
 
-  console.debug("!!! section: %O, configuration: %O", section, configuration)
-
   let toutesCollectionsInclues = null
   if(configuration.toutes_collections !== undefined) {
     toutesCollectionsInclues = configuration.toutes_collections?true:false
@@ -483,12 +480,19 @@ function SectionVide(props) {
 
 function SectionForums(props) {
 
-  const section = props.section
+  const section = props.section,
+        configuration = props.configuration
 
-  var tousForumsInclus = section.tous_forums?true:false
-  var forumsSelectionnes = section.listeForums || []
+  var forumsSelectionnes = configuration.liste_forums || section.liste_forums || []
   const niveauxSecurite = ['1.public']
   if(props.site.securite==='2.prive') niveauxSecurite.push('2.prive')
+
+  let tousForumsInclus = null
+  if(configuration.tous_forums !== undefined) {
+    tousForumsInclus = configuration.tous_forums?true:false
+  } else {
+    tousForumsInclus = section.tous_forums?true:false
+  }
 
   var forumsDisponibles = ''
   if(!tousForumsInclus && props.forums) {
@@ -500,7 +504,7 @@ function SectionForums(props) {
           <Form.Check id={"forum-" + item.forum_id} key={item.forum_id}
                       type="checkbox"
                       label={item.nom}
-                      name="listeForums"
+                      name="liste_forums"
                       value={item.forum_id}
                       checked={forumsSelectionnes.includes(item.forum_id)}
                       onChange={props.toggleListValue} />
@@ -519,13 +523,15 @@ function SectionForums(props) {
                       label={"Tous les forums publics" + (props.site.securite==='2.prive'?' et prives':'')}
                       name="tous_forums"
                       checked={tousForumsInclus}
-                      onChange={props.toggleCheckbox} />
+                      value="true"
+                      onChange={props.changerChampBool} />
           <Form.Check id={'forums--selectionnes'}
                       type="radio"
                       label="Forums selectionnes uniquement"
                       name="tous_forums"
                       checked={!tousForumsInclus}
-                      onChange={props.toggleCheckbox} />
+                      value="false"
+                      onChange={props.changerChampBool} />
         </Form.Group>
 
         {!tousForumsInclus?
