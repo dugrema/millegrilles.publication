@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import {Row, Col, Nav, Button, InputGroup, Form} from 'react-bootstrap'
+import {Row, Col, Nav, Button, ButtonGroup, InputGroup, Form} from 'react-bootstrap'
 
 import {RenderChampMultilingue} from './ComponentMultilingue'
 
@@ -74,10 +74,9 @@ function Site(props) {
 
       <Nav onSelect={setSectionId} className="flex-column">
         {listeSections.map(section=>{
-          const nomSection = section.nom_section || section.section_id
           return (
             <Nav.Link key={section.section_id} eventKey={section.section_id}>
-              {nomSection}
+              <RenderChampMultilingue champ={section.entete} defaut={section.section_id}/>
             </Nav.Link>
           )
         })}
@@ -118,7 +117,9 @@ function PageSection(props) {
 
   return (
     <>
-      <h2>Modifier page</h2>
+      <h2>Modifier page{' '}
+        <RenderChampMultilingue champ={props.section.entete} defaut={props.section.section_id}/>
+      </h2>
 
       <Button>Sauvegarder modifications</Button>
       <Button variant="secondary" onClick={props.retour}>Retour</Button>
@@ -158,17 +159,50 @@ function PageSection(props) {
 }
 
 function RenderPartiePage(props) {
-  var TypePage = TypePartiePageInconnu
   const partiePage = props.partiePage || {}
-  const type = partiePage.type || ''
+
+  const type = partiePage.type_partie || ''
+  var TypePage = TypePartiePageInconnu
   switch(type) {
+    case 'texte': TypePage = PageTypeTexte; break
+    case 'colonnes': TypePage = PageTypeColonnes; break
+    case 'media': TypePage = PageTypeMedia; break
     default: TypePage = TypePartiePageInconnu
   }
 
-  return <TypePage partiePage={partiePage}
-                   site={props.site}
-                   section={props.section}
-                   rootProps={props.rootProps} />
+  return (
+    <>
+      <ButtonGroup>
+        <Button>
+          <i className="fa fa-arrow-up"/>
+        </Button>
+        <Button>
+          <i className="fa fa-arrow-down"/>
+        </Button>
+        <Button>
+          Activer/desactiver
+        </Button>
+      </ButtonGroup>
+
+      <TypePage partiePage={partiePage}
+                site={props.site}
+                section={props.section}
+                rootProps={props.rootProps} />
+    </>
+
+  )
+}
+
+function PageTypeTexte(props) {
+  return <p>Page type texte</p>
+}
+
+function PageTypeColonnes(props) {
+  return <p>Page type colonnes</p>
+}
+
+function PageTypeMedia(props) {
+  return <p>Page type media</p>
 }
 
 function TypePartiePageInconnu(props) {
