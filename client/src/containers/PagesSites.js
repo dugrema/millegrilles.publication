@@ -1,7 +1,8 @@
 import React, {useState, useEffect} from 'react'
 import {Row, Col, Nav, Button, ButtonGroup, InputGroup, Form} from 'react-bootstrap'
+import parse from 'html-react-parser'
 
-import {RenderChampMultilingue} from './ComponentMultilingue'
+import {RenderChampMultilingue, ChampSummernoteMultilingue} from './ComponentMultilingue'
 
 export default function PagesSites(props) {
 
@@ -159,8 +160,10 @@ function PageSection(props) {
 }
 
 function RenderPartiePage(props) {
-  const partiePage = props.partiePage || {}
 
+  const [editionEnCours, setEditionEnCours] = useState(false)
+
+  const partiePage = props.partiePage || {}
   const type = partiePage.type_partie || ''
   var TypePage = TypePartiePageInconnu
   switch(type) {
@@ -172,29 +175,59 @@ function RenderPartiePage(props) {
 
   return (
     <>
-      <ButtonGroup>
-        <Button>
-          <i className="fa fa-arrow-up"/>
-        </Button>
-        <Button>
-          <i className="fa fa-arrow-down"/>
-        </Button>
-        <Button>
-          Activer/desactiver
-        </Button>
-      </ButtonGroup>
+      <Row>
+        <Col>
+          <ButtonGroup>
+            <Button>
+              <i className="fa fa-arrow-up"/>
+            </Button>
+            <Button>
+              <i className="fa fa-arrow-down"/>
+            </Button>
+            {editionEnCours?
+              <>
+                <Button>Sauvegarder</Button>
+                <Button onClick={_=>setEditionEnCours(false)}>Annuler</Button>
+              </>
+              :
+              <Button onClick={_=>setEditionEnCours(true)}>Editer</Button>
+            }
+
+            <Button>
+              Activer/desactiver
+            </Button>
+          </ButtonGroup>
+        </Col>
+      </Row>
 
       <TypePage partiePage={partiePage}
                 site={props.site}
                 section={props.section}
+                editionEnCours={editionEnCours}
                 rootProps={props.rootProps} />
     </>
-
   )
 }
 
 function PageTypeTexte(props) {
-  return <p>Page type texte</p>
+
+  if(props.editionEnCours) {
+    return (
+      <p>Editeur</p>
+    )
+  }
+
+  const html = props.section.html
+  var htmlParsed = null
+  if(html) {
+    htmlParsed = Object.keys(html).reduce((acc, lang)=>{
+      acc[lang] = parse(html[lang])
+    }, {})
+  }
+
+  return (
+    <RenderChampMultilingue champ={htmlParsed} />
+  )
 }
 
 function PageTypeColonnes(props) {
