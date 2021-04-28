@@ -56,11 +56,20 @@ function Site(props) {
     chargerListeSections(props.rootProps.connexionWorker, siteId, setListeSections)
   }, [])
 
+  const updateSection = (section) => {
+    const listeEdit = listeSections.map(item=>{
+      if(item.section_id === section.section_id) return section
+      return item
+    })
+    setListeSections(listeEdit)
+  }
+
   if(sectionId) {
     const section = listeSections.filter(item=>item.section_id===sectionId)[0]
     return <PageSection site={props.site}
                         section={section}
                         retour={_=>setSectionId('')}
+                        updateSection={updateSection}
                         rootProps={props.rootProps} />
   }
 
@@ -91,44 +100,70 @@ function Site(props) {
 function PageSection(props) {
 
   const [partiesPage, setPartiesPage] = useState([])
-  const [listePartiesPage, setListePartiesPage] = useState([])
+  const [listePartiesPage, setListePartiesPage] = useState('')
   const [typeSelectionne, setTypeSelectionne] = useState('texte')
 
+  const connexionWorker = props.rootProps.connexionWorker
+
+  const listePartiesPageActuel = listePartiesPage || props.section.parties_pages || []
+  // console.debug("Liste parties page actuel : %O", listePartiesPageActuel)
+
   useEffect(_=>{
-    console.debug("!!! Proppys %O", props)
-    chargerPartiesPages(props.rootProps.connexionWorker, props.section.section_id, setPartiesPage)
+    // console.debug("!!! Proppys %O", props)
+    chargerPartiesPages(connexionWorker, props.section.section_id, setPartiesPage)
   }, [])
 
   const boutonAjouterPartiePage = async event => {
-    console.debug("Ajouter partie page de type %s", typeSelectionne)
+    // console.debug("Ajouter partie page de type %s", typeSelectionne)
     const sectionId = props.section.section_id,
           siteId = props.site.site_id
     const partiePage = await ajouterPartiePage(
-      props.rootProps.connexionWorker, siteId, sectionId, typeSelectionne, partiesPage, setPartiesPage)
+      connexionWorker, siteId, sectionId, typeSelectionne, partiesPage, setPartiesPage)
     // const listePartiesPageMaj = [...listePartiesPage, partiePage.partiepage_id]
     // setListePartiesPage(listePartiesPageMaj)
   }
 
   const activerPartiePage = event => {
     const partipageId = event.currentTarget.value
-    if(!listePartiesPage.includes(partipageId)) {
-      setListePartiesPage([...listePartiesPage, partipageId])
+    if(!listePartiesPageActuel.includes(partipageId)) {
+      setListePartiesPage([...listePartiesPageActuel, partipageId])
     }
   }
 
   const desactiverPartiePage = event => {
     const partipageId = event.currentTarget.value
-    if(listePartiesPage.includes(partipageId)) {
-      setListePartiesPage(listePartiesPage.filter(item=>item!==partipageId))
+    if(listePartiesPageActuel.includes(partipageId)) {
+      setListePartiesPage(listePartiesPageActuel.filter(item=>item!==partipageId))
     }
   }
 
-  const boutonSauvegarderListe = event => {
-
+  const boutonUpSection = event => {
+    const partipageId = event.currentTarget.value
+    var idx = listePartiesPageActuel.indexOf(partipageId)
+    idx = idx-1
+    const listeEdit = listePartiesPageActuel.filter(item=>item!==partipageId)
+    listeEdit.splice(idx, 0, partipageId)
+    setListePartiesPage(listeEdit)
   }
 
-  const partiesPageDesactivees = partiesPage.filter(partiePage=>!listePartiesPage.includes(partiePage.partiepage_id))
-  console.debug("Parties page desactivees : %O", partiesPageDesactivees)
+  const boutonDownSection = event => {
+    const partipageId = event.currentTarget.value
+    var idx = listePartiesPageActuel.indexOf(partipageId)
+    idx = idx+1
+    const listeEdit = listePartiesPageActuel.filter(item=>item!==partipageId)
+    listeEdit.splice(idx, 0, partipageId)
+    setListePartiesPage(listeEdit)
+  }
+
+  const boutonSauvegarderListe = async event => {
+    const sectionId = props.section.section_id
+    const sectionUpdatee = await sauvegarderSection(connexionWorker, sectionId, listePartiesPage)
+    props.updateSection(sectionUpdatee)
+    setListePartiesPage('')
+  }
+
+  const partiesPageDesactivees = partiesPage.filter(partiePage=>!listePartiesPageActuel.includes(partiePage.partiepage_id))
+  // console.debug("Parties page desactivees : %O", partiesPageDesactivees)
 
   return (
     <>
@@ -136,7 +171,7 @@ function PageSection(props) {
         <RenderChampMultilingue champ={props.section.entete} defaut={props.section.section_id}/>
       </h2>
 
-      <Button>Sauvegarder modifications</Button>
+      <Button onClick={boutonSauvegarderListe}>Sauvegarder modifications</Button>
       <Button variant="secondary" onClick={props.retour}>Retour</Button>
 
       <h3>Ajouter partie</h3>
@@ -153,9 +188,11 @@ function PageSection(props) {
       </InputGroup>
 
       <h3>Page</h3>
-      {listePartiesPage.map(partiePageId=>{
-        const partiePage = partiesPage.filter(item=>item.partiepage_id===partiePageId)[0]
-        return <RenderPartiePage partiePage={partiePage}
+      {listePartiesPageActuel.map((partiePageId, idx)=>{
+        const partiePage = partiesPage.filter(item=>item.partiepage_id===partiePageId)[0] || ''
+        return <RenderPartiePage key={partiePage.partiepage_id}
+                                 idx={idx}
+                                 partiePage={partiePage}
                                  site={props.site}
                                  section={props.section}
                                  active={true}
@@ -163,6 +200,8 @@ function PageSection(props) {
                                  setPartiesPage={setPartiesPage}
                                  activerPartiePage={activerPartiePage}
                                  desactiverPartiePage={desactiverPartiePage}
+                                 boutonUpSection={boutonUpSection}
+                                 boutonDownSection={boutonDownSection}
                                  rootProps={props.rootProps} />
       })}
 
@@ -194,13 +233,13 @@ function RenderPartiePage(props) {
   const partiepageId = partiePage.partiepage_id
 
   const sauvegarder = async event => {
-    console.debug("Sauvegarder %O", contenuEditionEnCours)
+    // console.debug("Sauvegarder %O", contenuEditionEnCours)
     const sectionId = props.section.section_id
     const reponse = await majPartiePage(
       props.rootProps.connexionWorker, partiepageId, contenuEditionEnCours,
       props.partiesPage, props.setPartiesPage
     )
-    console.debug("Reponse maj section : %O", reponse)
+    // console.debug("Reponse maj section : %O", reponse)
     setContenuEditionEnCours('')
     setEditionEnCours(false)
   }
@@ -219,11 +258,17 @@ function RenderPartiePage(props) {
         <Col>
           <ButtonGroup>
 
-            <Button variant="secondary" disabled={!props.active}>
+            <Button variant="secondary"
+                    onClick={props.boutonUpSection}
+                    disabled={!props.active || props.idx===0}
+                    value={partiepageId}>
               <i className="fa fa-arrow-up"/>
             </Button>
 
-            <Button variant="secondary" disabled={!props.active}>
+            <Button variant="secondary"
+                    onClick={props.boutonDownSection}
+                    disabled={!props.active}
+                    value={partiepageId}>
               <i className="fa fa-arrow-down"/>
             </Button>
 
@@ -237,9 +282,13 @@ function RenderPartiePage(props) {
             }
 
             {props.active?
-              <Button variant="secondary" onClick={props.desactiverPartiePage} value={partiepageId}>Desactiver</Button>
+              <Button variant="secondary"
+                      onClick={props.desactiverPartiePage}
+                      value={partiepageId}>Desactiver</Button>
               :
-              <Button variant="secondary" onClick={props.activerPartiePage} value={partiepageId}>Activer</Button>
+              <Button variant="secondary"
+                      onClick={props.activerPartiePage}
+                      value={partiepageId}>Activer</Button>
             }
 
           </ButtonGroup>
@@ -292,7 +341,7 @@ function PageTypeTexte(props) {
     }, {})
   }
 
-  console.debug("Afficher html %O, htmlParsed: %O", html, htmlParsed)
+  // console.debug("Afficher html %O, htmlParsed: %O", html, htmlParsed)
 
   return (
     <RenderValeursMultilingueRows champ={htmlParsed} languages={props.site.languages}/>
@@ -315,12 +364,12 @@ function TypePartiePageInconnu(props) {
 
 async function chargerListeSites(connexionWorker, setListeSites) {
   const sites = await connexionWorker.requeteSites({})
-  console.debug("Sites charges : %O", sites)
+  // console.debug("Sites charges : %O", sites)
   setListeSites(sites)
 }
 
 async function chargerListeSections(connexionWorker, sectionId, setListeSections) {
-  console.debug("Charger liste : %s", sectionId)
+  // console.debug("Charger liste : %s", sectionId)
   var sections = await connexionWorker.requeteSectionsSite(sectionId)
   sections = sections.filter(section=>section.type_section === 'pages')
   setListeSections(sections)
@@ -329,13 +378,19 @@ async function chargerListeSections(connexionWorker, sectionId, setListeSections
 async function chargerPartiesPages(connexionWorker, sectionId, setPartiesPages) {
   const partiesPage = await connexionWorker.requetePartiesPage(sectionId)
   setPartiesPages(partiesPage)
-  console.debug("Parties page: %O", partiesPage)
+  // console.debug("Parties page: %O", partiesPage)
+}
+
+async function sauvegarderSection(connexionWorker, sectionId, listePartiesPage) {
+  const reponse = await connexionWorker.majSection({section_id: sectionId, parties_pages: listePartiesPage})
+  // console.debug("Reponse sauvegarder section : %O", reponse)
+  return reponse.section
 }
 
 async function ajouterPartiePage(connexionWorker, siteId, sectionId, typePartie, partiesPage, setPartiesPage) {
-  console.debug("Ajouter partiePage siteId %s, sectionId %s, type %s", siteId, sectionId, typePartie)
+  // console.debug("Ajouter partiePage siteId %s, sectionId %s, type %s", siteId, sectionId, typePartie)
   const reponse = await connexionWorker.ajouterPartiePage(siteId, sectionId, typePartie)
-  console.debug("Reponse ajouterPartiePage: %O", reponse)
+  // console.debug("Reponse ajouterPartiePage: %O", reponse)
   const partiePage = reponse.partie_page
   partiesPage = [...partiesPage, reponse.partie_page]
   setPartiesPage(partiesPage)
@@ -344,10 +399,10 @@ async function ajouterPartiePage(connexionWorker, siteId, sectionId, typePartie,
 
 async function majPartiePage(connexionWorker, partiePageId, configuration, partiesPage, setPartiesPage) {
   const reponse = await connexionWorker.majPartiePage(partiePageId, configuration)
-  console.debug("Reponse majPartiePage: %O", reponse)
+  // console.debug("Reponse majPartiePage: %O", reponse)
   const partiePage = reponse.partie_page
 
-  console.debug("PartiesPage existant : %O", partiesPage)
+  // console.debug("PartiesPage existant : %O", partiesPage)
   partiesPage = partiesPage.map(item=>{
     if(item.partiepage_id === partiePage.partiepage_id) return partiePage
     return item
