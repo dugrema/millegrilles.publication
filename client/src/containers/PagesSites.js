@@ -106,6 +106,7 @@ function PageSection(props) {
   const [typeSelectionne, setTypeSelectionne] = useState('texte')
   const [showBrowserFichiers, setShowBrowserFichiers] = useState(false)
   const [mediaSelectionne, setMediaSelectionne] = useState('')
+  const [partiePageIdMedia, setPartiePageIdMedia] = useState('')
 
   const connexionWorker = props.rootProps.connexionWorker
 
@@ -166,7 +167,8 @@ function PageSection(props) {
     setListePartiesPage('')
   }
 
-  const selectionnerMedia = _ => {
+  const selectionnerMedia = partiePage_id => {
+    setPartiePageIdMedia(partiePage_id)
     setShowBrowserFichiers(true)
   }
 
@@ -217,6 +219,7 @@ function PageSection(props) {
                                  boutonDownSection={boutonDownSection}
                                  selectionnerMedia={selectionnerMedia}
                                  mediaSelectionne={mediaSelectionne}
+                                 partiePageIdMedia={partiePageIdMedia}
                                  rootProps={props.rootProps} />
       })}
 
@@ -233,6 +236,7 @@ function PageSection(props) {
                                  desactiverPartiePage={desactiverPartiePage}
                                  selectionnerMedia={selectionnerMedia}
                                  mediaSelectionne={mediaSelectionne}
+                                 partiePageIdMedia={partiePageIdMedia}
                                  rootProps={props.rootProps} />
       })}
     </>
@@ -326,6 +330,7 @@ function RenderPartiePage(props) {
                 setContenuEditionEnCours={setContenuEditionEnCours}
                 selectionnerMedia={props.selectionnerMedia}
                 mediaSelectionne={props.mediaSelectionne}
+                partiePageIdMedia={props.partiePageIdMedia}
                 rootProps={props.rootProps} />
 
     </div>
@@ -510,7 +515,7 @@ function PageTypeMedia(props) {
   }
 
   useEffect(_=>{
-    if(props.mediaSelectionne && latchMedia) {
+    if(props.mediaSelectionne && props.partiePageIdMedia === props.partiePage.partiepage_id) {
       console.debug("Changement media selectionne: %O", props.mediaSelectionne)
       setMedia(props.mediaSelectionne)
       setLatchMedia(false)
@@ -520,7 +525,7 @@ function PageTypeMedia(props) {
   const selectionnerMedia = event => {
     // Appeler avec callback vers notre setMedia
     setLatchMedia(true)  // Permet d'ecouter le changement de media
-    props.selectionnerMedia(setMedia)
+    props.selectionnerMedia(props.partiePage.partiepage_id)
   }
 
   const changerChamp = event => {
