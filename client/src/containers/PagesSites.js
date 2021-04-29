@@ -190,7 +190,7 @@ function PageSection(props) {
       <h3>Page</h3>
       {listePartiesPageActuel.map((partiePageId, idx)=>{
         const partiePage = partiesPage.filter(item=>item.partiepage_id===partiePageId)[0] || ''
-        return <RenderPartiePage key={partiePage.partiepage_id}
+        return <RenderPartiePage key={partiePage.partiepage_id || idx}
                                  idx={idx}
                                  partiePage={partiePage}
                                  site={props.site}
@@ -205,7 +205,7 @@ function PageSection(props) {
                                  rootProps={props.rootProps} />
       })}
 
-      <h3>Sections desactivees</h3>
+      <h3>Parties desactivees</h3>
       {partiesPageDesactivees.map(partiePage=>{
         return <RenderPartiePage key={partiePage.partiepage_id}
                                  partiePage={partiePage}
@@ -253,8 +253,11 @@ function RenderPartiePage(props) {
   }
 
   return (
-    <>
+    <div className="partie-page-edit">
       <Row>
+        <Col md={2}>
+          <h4>{type}</h4>
+        </Col>
         <Col>
           <ButtonGroup>
 
@@ -303,7 +306,8 @@ function RenderPartiePage(props) {
                 contenuEditionEnCours={contenuEditionEnCours}
                 setContenuEditionEnCours={setContenuEditionEnCours}
                 rootProps={props.rootProps} />
-    </>
+
+    </div>
   )
 }
 
@@ -349,7 +353,32 @@ function PageTypeTexte(props) {
 }
 
 function PageTypeColonnes(props) {
-  return <p>Page type colonnes</p>
+  const [colonneIdx, setColonneIdx] = useState('')
+
+  if(!props.section.colonnes) return ''
+
+  if(props.editionEnCours) {
+    return <p>edition</p>
+  }
+
+  var contenuColonne = ''
+  if(colonneIdx) {
+    contenuColonne = props.section.colonnes[colonneIdx]
+  }
+  const htmlColonne = contenuColonne.html || ''
+
+  return (
+    <>
+      <Nav>
+        <Nav.Link>Colonne 1</Nav.Link>
+        <Nav.Link>Colonne 2</Nav.Link>
+        <Nav.Link>Colonne 3</Nav.Link>
+        <Button variant="secondary">Ajouter</Button>
+      </Nav>
+
+      {htmlColonne}
+    </>
+  )
 }
 
 function PageTypeMedia(props) {

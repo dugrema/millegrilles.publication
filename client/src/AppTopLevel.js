@@ -39,7 +39,7 @@ export default class AppTopLevel extends React.Component {
 
   componentDidMount() {
     setupWorkers(this).then( async _ =>{
-      console.debug("Workers charges, info session : %O, proppys : %O", this.state, this.props)
+      // console.debug("Workers charges, info session : %O, proppys : %O", this.state, this.props)
 
       this.setState({
         signateurTransaction: {preparerTransaction: this.state.chiffrageWorker.formatterMessage}, // Legacy
@@ -56,7 +56,7 @@ export default class AppTopLevel extends React.Component {
   }
 
   setAfficherSection = event => {
-    console.debug("Afficher section : %O", event)
+    // console.debug("Afficher section : %O", event)
     const afficherSection = event.currentTarget?event.currentTarget.value:event
     this.setState({afficherSection})
   }
@@ -76,7 +76,7 @@ export default class AppTopLevel extends React.Component {
       this.state.connexionWorker.downgradePrive()
     } else {
       // Activer mode protege, upgrade avec certificat (implicite)
-      console.debug("toggleProtege")
+      // console.debug("toggleProtege")
       try {
         const resultat = await this.state.connexionWorker.upgradeProteger()
       } catch(err) {
@@ -91,7 +91,7 @@ export default class AppTopLevel extends React.Component {
   }
 
   deconnexionSocketIo = comlinkProxy(event => {
-    console.debug("Socket.IO deconnecte : %O", event)
+    // console.debug("Socket.IO deconnecte : %O", event)
     this.setState({modeProtege: false})
   })
 
@@ -103,9 +103,9 @@ export default class AppTopLevel extends React.Component {
   })
 
   setEtatProtege = comlinkProxy(reponse => {
-    console.debug("Callback etat protege : %O", reponse)
+    // console.debug("Callback etat protege : %O", reponse)
     const modeProtege = reponse.etat
-    console.debug("Toggle mode protege, nouvel etat : %O", reponse)
+    // console.debug("Toggle mode protege, nouvel etat : %O", reponse)
     this.setState({modeProtege})
   })
 

@@ -99,6 +99,10 @@ div.table div.table-header {
   font-weight: bolder;
 }
 
+.partie-page-edit {
+  padding-bottom: 2em;
+}
+
 @media print {
 
   .w3-top {

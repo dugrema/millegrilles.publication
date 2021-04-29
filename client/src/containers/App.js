@@ -46,7 +46,7 @@ export class ApplicationPublication extends React.Component {
     const wsa = this.props.rootProps.connexionWorker
     wsa.isFormatteurReady()
       .then( async _ =>{
-        console.debug("Formatteur ready sur connexion")
+        // console.debug("Formatteur ready sur connexion")
         this.setState({websocketApp: wsa})
       })
 

@@ -13,7 +13,7 @@ export async function setupWorkers(app) {
     initialiserWorkerChiffrage(app.callbackCleMillegrille),
     initialiserConnexion(app)
   ])
-  console.debug("Workers prets")
+  // console.debug("Workers prets")
 
   app.setState({
     connexionWorker: connexion.proxy,
@@ -30,7 +30,7 @@ export function cleanupWorkers(app) {
 
   try {
     if(app.state.chiffrageWorker) {
-      console.debug("Nettoyage worker chiffrage, release proxy")
+      // console.debug("Nettoyage worker chiffrage, release proxy")
       app.state.chiffrageWorker[releaseProxy]()
       app.state.chiffrageInstance.terminate()
       app.setState({chiffrageWorker: null, chiffrageInstance: null})
@@ -39,7 +39,7 @@ export function cleanupWorkers(app) {
 
   try {
     if(app.state.connexionWorker) {
-      console.debug("Nettoyage worker, connexion release proxy")
+      // console.debug("Nettoyage worker, connexion release proxy")
       app.state.connexionWorker[releaseProxy]()
       app.state.connexionInstance.terminate()
       app.setState({connexionWorker: null, connexionInstance: null})
@@ -76,7 +76,7 @@ async function connecterReact(connexionWorker, app) {
      - connexionWorker : proxu de connexionWorker deja initialise
      - app : this d'une classe React */
   const infoIdmg = await connexionWorker.connecter()
-  console.debug("Connexion socket.io completee, info idmg : %O", infoIdmg)
+  // console.debug("Connexion socket.io completee, info idmg : %O", infoIdmg)
   app.setState({...infoIdmg})
 
   connexionWorker.socketOn('disconnect', app.deconnexionSocketIo)
@@ -93,21 +93,21 @@ export async function preparerWorkersAvecCles(nomUsager, chiffrageWorker, connex
 
     // Initialiser le CertificateStore
     await chiffrageWorker.initialiserCertificateStore([...fullchain].pop(), {isPEM: true, DEBUG: false})
-    console.debug("Certificat : %O, Cles privees : %O", certInfo.fullchain, clesPrivees)
+    // console.debug("Certificat : %O, Cles privees : %O", certInfo.fullchain, clesPrivees)
 
     // Initialiser web worker
     await chiffrageWorker.initialiserFormatteurMessage({
       certificatPem: certInfo.fullchain,
       clePriveeSign: clesPrivees.signer,
       clePriveeDecrypt: clesPrivees.dechiffrer,
-      DEBUG: true
+      DEBUG: false
     })
 
     await connexionWorker.initialiserFormatteurMessage({
       certificatPem: certInfo.fullchain,
       clePriveeSign: clesPrivees.signer,
       clePriveeDecrypt: clesPrivees.dechiffrer,
-      DEBUG: true
+      DEBUG: false
     })
   } else {
     throw new Error("Pas de cert")
