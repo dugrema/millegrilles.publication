@@ -4,6 +4,8 @@ const debug = require('debug')('millegrilles:publication:publicationSocketApp')
 function configurerEvenements(socket) {
   const configurationEvenements = {
     listenersPrives: [
+    ],
+    listenersProteges: [
       {eventName: 'publication/requeteSites', callback: (params, cb) => {requeteSites(socket, params, cb)}},
       {eventName: 'publication/requeteSite', callback: (params, cb) => {requeteSite(socket, params, cb)}},
       {eventName: 'publication/requetePosts', callback: (params, cb) => {requetePosts(socket, params, cb)}},
@@ -14,8 +16,6 @@ function configurerEvenements(socket) {
       {eventName: 'publication/requeteForums', callback: (params, cb) => {requeteForums(socket, params, cb)}},
       {eventName: 'publication/requeteSectionsSite', callback: (params, cb) => {requeteSectionsSite(socket, params, cb)}},
       {eventName: 'publication/requetePartiesPage', callback: (params, cb) => {requetePartiesPage(socket, params, cb)}},
-    ],
-    listenersProteges: [
       {eventName: 'publication/creerSite', callback: (transaction, cb) => {
         soumettreTransaction(socket, transaction, 'Publication.creerSite', cb)
       }},
@@ -37,6 +37,9 @@ function configurerEvenements(socket) {
       {eventName: 'publication/majPartiePage', callback: (transaction, cb) => {
         soumettreTransaction(socket, transaction, 'Publication.majPartiePage', cb)
       }},
+      {eventName: 'grosfichiers/getCollections', callback: async (params, cb) => {cb(await getCollections(socket, params))}},
+      {eventName: 'grosfichiers/getContenuCollection', callback: async (params, cb) => {cb(await getContenuCollection(socket, params))}},
+      {eventName: 'maitrecles/getCleFichier', callback: async (params, cb) => {cb(await getCleFichier(socket, params))}},
     ]
   }
 
@@ -161,6 +164,42 @@ async function soumettreMajCdn(socket, params, cb) {
   } catch(err) {
     console.error("ERROR publicationSocketApp.soumettreMajCdn %O", err)
     return cb({err: ''+err})
+  }
+}
+
+async function getCollections(socket, params) {
+  const amqpdao = socket.amqpdao,
+        domaine = params['en-tete'].domaine
+  try {
+    const domaineAction = 'GrosFichiers.collections'
+    if(domaine !== domaineAction) {
+      return {err: 'Mauvais domaine ' + domaine}
+    }
+    const collectionsReponse = await amqpdao.transmettreRequete(
+      domaineAction, params, {noformat: true, decoder: true}
+    )
+    return collectionsReponse
+  } catch(err) {
+    debug("Erreur getCollections\n%O", err)
+    return {err}
+  }
+}
+
+async function getContenuCollection(socket, params) {
+  const amqpdao = socket.amqpdao
+  try {
+    const domaineAction = 'GrosFichiers.contenuCollection'
+    const domaine = params['en-tete'].domaine
+    if(domaine !== domaineAction) {
+      return {err: 'Mauvais domaine ' + domaine}
+    }
+    debug("Requete contenu collection : %O", params)
+    const collectionsReponse = await amqpdao.transmettreRequete(
+      domaineAction, params, {noformat: true, decoder: true})
+    return collectionsReponse
+  } catch(err) {
+    debug("Erreur getContenuCollection\n%O", err)
+    return {err}
   }
 }
 

@@ -54,6 +54,23 @@ function requetePartiesPage(sectionId) {
   return connexionClient.emitBlocking('publication/requetePartiesPage', {section_id: sectionId}, {noformat: true})
 }
 
+function getCollections() {
+  const domaineAction = 'GrosFichiers.collections'
+  return connexionClient.emitBlocking('grosfichiers/getCollections', {}, {domaine: domaineAction, attacherCertificat: true})
+}
+
+function getContenuCollection(uuid_collection) {
+  const domaineAction = 'GrosFichiers.contenuCollection'
+  return connexionClient.emitBlocking('grosfichiers/getContenuCollection', {uuid: uuid_collection}, {domaine: domaineAction, attacherCertificat: true})
+}
+
+function getCleFichier(listeFuuid, opts) {
+  opts = opts || {}
+  const domaineAction = 'MaitreDesCles.dechiffrage'
+  const requete = { liste_hachage_bytes: listeFuuid, permission: opts.permission }
+  return connexionClient.emitBlocking('maitrecles/getCleFichier', requete, {domaine: domaineAction, attacherCertificat: true})
+}
+
 // Commandes
 
 function creerSite(transaction) {
@@ -103,6 +120,9 @@ comlinkExpose({
   requeteCollectionsPubliques, requeteListeCdns, requeteCleSsh,
   requeteForums, requeteSectionsSite, requeteSection, requetePartiesPage,
 
+  getCollections, getContenuCollection, getCleFichier,
+
   creerSite, majSite, majSection, majCdn, supprimerCdn,
   ajouterPartiePage, majPartiePage,
+
 })

@@ -3,6 +3,7 @@ import {Row, Col, Nav, Button, ButtonGroup, InputGroup, Form, Card, CardDeck} fr
 import parse from 'html-react-parser'
 
 import {RenderChampMultilingue, ChampSummernoteMultilingue, RenderValeursMultilingueRows} from './ComponentMultilingue'
+import BrowserMediaGrosfichiers from './BrowserMedia'
 
 export default function PagesSites(props) {
 
