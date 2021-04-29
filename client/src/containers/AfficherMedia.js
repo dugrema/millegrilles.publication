@@ -108,7 +108,7 @@ export async function chargerCle(nomUsager, connexionWorker, fuuid, opts) {
   }
 }
 
-function CardView(props) {
+export function CardView(props) {
   const item = props.item
   // const preview = '/place/' + item.preview
   // const url = '/place/' + item.src
@@ -127,7 +127,7 @@ function CardView(props) {
 
   var fuuid = item.fuuid_v_courante
   var version_courante = item.version_courante
-  if(props.usePreview && version_courante) {
+  if((props.usePreview || props.usePoster) && version_courante) {
     fuuid = version_courante.fuuid_preview
   }
 

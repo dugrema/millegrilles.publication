@@ -4,6 +4,7 @@ import parse from 'html-react-parser'
 
 import {RenderChampMultilingue, ChampSummernoteMultilingue, RenderValeursMultilingueRows} from './ComponentMultilingue'
 import BrowserMediaGrosfichiers from './BrowserMedia'
+import {CardView} from './AfficherMedia'
 
 export default function PagesSites(props) {
 
@@ -165,6 +166,10 @@ function PageSection(props) {
     setListePartiesPage('')
   }
 
+  const selectionnerMedia = _ => {
+    setShowBrowserFichiers(true)
+  }
+
   const partiesPageDesactivees = partiesPage.filter(partiePage=>!listePartiesPageActuel.includes(partiePage.partiepage_id))
   // console.debug("Parties page desactivees : %O", partiesPageDesactivees)
 
@@ -174,8 +179,6 @@ function PageSection(props) {
                                 hide={_=>setShowBrowserFichiers(false)}
                                 selectionner={setMediaSelectionne}
                                 rootProps={props.rootProps} />
-
-      <Button onClick={_=>{setMediaSelectionne(''); setShowBrowserFichiers(true)}}>Browser</Button>
 
       <h2>Modifier page{' '}
         <RenderChampMultilingue champ={props.section.entete} defaut={props.section.section_id}/>
@@ -212,6 +215,8 @@ function PageSection(props) {
                                  desactiverPartiePage={desactiverPartiePage}
                                  boutonUpSection={boutonUpSection}
                                  boutonDownSection={boutonDownSection}
+                                 selectionnerMedia={selectionnerMedia}
+                                 mediaSelectionne={mediaSelectionne}
                                  rootProps={props.rootProps} />
       })}
 
@@ -226,6 +231,8 @@ function PageSection(props) {
                                  setPartiesPage={setPartiesPage}
                                  activerPartiePage={activerPartiePage}
                                  desactiverPartiePage={desactiverPartiePage}
+                                 selectionnerMedia={selectionnerMedia}
+                                 mediaSelectionne={mediaSelectionne}
                                  rootProps={props.rootProps} />
       })}
     </>
@@ -315,6 +322,8 @@ function RenderPartiePage(props) {
                 editionEnCours={editionEnCours}
                 contenuEditionEnCours={contenuEditionEnCours}
                 setContenuEditionEnCours={setContenuEditionEnCours}
+                selectionnerMedia={props.selectionnerMedia}
+                mediaSelectionne={props.mediaSelectionne}
                 rootProps={props.rootProps} />
 
     </div>
@@ -487,7 +496,77 @@ function PageColonneAffichage(props) {
 }
 
 function PageTypeMedia(props) {
-  return <p>Page type media</p>
+  //const [media, setMedia] = useState('')
+
+  const contenuEditionEnCours = props.contenuEditionEnCours || ''
+  const media = contenuEditionEnCours.media || props.partiePage.media || ''
+  const caption = contenuEditionEnCours.caption || props.partiePage.caption || ''
+  const setMedia = fichier => {
+    const contenuMaj = {...contenuEditionEnCours}
+    contenuMaj.media = fichier
+    props.setContenuEditionEnCours(contenuMaj)
+  }
+
+  useEffect(_=>{
+    if(props.mediaSelectionne) {
+      console.debug("Changement media selectionne: %O", props.mediaSelectionne)
+      setMedia(props.mediaSelectionne)
+    }
+  }, [props.mediaSelectionne])
+
+  const selectionnerMedia = event => {
+    // Appeler avec callback vers notre setMedia
+    props.selectionnerMedia(setMedia)
+  }
+
+  const changerChamp = event => {
+    const {name, value} = event.currentTarget
+    const contenuMaj = {...contenuEditionEnCours}
+    contenuMaj[name] = value
+    props.setContenuEditionEnCours(contenuMaj)
+  }
+
+  if(props.editionEnCours) {
+
+    return (
+      <>
+        <Button onClick={selectionnerMedia}>Changer media</Button>
+
+        <Row>
+          {media?
+            <CardView item={media}
+                      usePoster={true}
+                      rootProps={props.rootProps} />
+            :''
+          }
+        </Row>
+
+        <Form.Group>
+          <Form.Label>Caption</Form.Label>
+          <Form.Control name="caption" value={caption} onChange={changerChamp}/>
+        </Form.Group>
+      </>
+    )
+
+  }
+
+  return (
+    <>
+      <Row>
+        {media?
+          <CardView item={media}
+                    usePoster={true}
+                    rootProps={props.rootProps} />
+          :''
+        }
+      </Row>
+      <Row>
+        <Col>
+          <p>{caption}</p>
+        </Col>
+      </Row>
+    </>
+  )
 }
 
 function TypePartiePageInconnu(props) {
