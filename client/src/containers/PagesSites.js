@@ -186,7 +186,7 @@ function PageSection(props) {
         <RenderChampMultilingue champ={props.section.entete} defaut={props.section.section_id}/>
       </h2>
 
-      <Button onClick={boutonSauvegarderListe}>Sauvegarder modifications</Button>
+      <Button onClick={boutonSauvegarderListe} disabled={!listePartiesPage}>Sauvegarder modifications</Button>
       <Button variant="secondary" onClick={props.retour}>Retour</Button>
 
       <h3>Ajouter partie</h3>
@@ -298,7 +298,7 @@ function RenderPartiePage(props) {
 
             {editionEnCours?
               <>
-                <Button onClick={sauvegarder}>Sauvegarder</Button>
+                <Button onClick={sauvegarder} disabled={!contenuEditionEnCours}>Sauvegarder</Button>
                 <Button variant="secondary" onClick={_=>{setEditionEnCours(false); setContenuEditionEnCours('')}}>
                   Annuler
                 </Button>
@@ -428,7 +428,7 @@ function PageTypeColonnes(props) {
 
         {colonneIdx!==''?
           <>
-            <Button onClick={supprimerColonne}>Supprimer</Button>
+            <Button variant="secondary" onClick={supprimerColonne}>Supprimer</Button>
             <PageColonneEdition contenu={colonnes[colonneIdx]}
                                 site={props.site}
                                 section={props.section}
@@ -536,6 +536,7 @@ function PageColonneAffichage(props) {
   if(contenu.media) {
     return (
       <CardBodyView item={contenu.media}
+                    usePoster={true}
                     rootProps={props.rootProps}>
         <RenderValeursMultilingueRows champ={htmlParsed} languages={props.site.languages}/>
       </CardBodyView>
@@ -588,7 +589,7 @@ function PageTypeMedia(props) {
 
     return (
       <>
-        <Button onClick={selectionnerMedia}>Changer media</Button>
+        <Button variant="secondary" onClick={selectionnerMedia}>Changer media</Button>
 
         <Row>
           {media?
