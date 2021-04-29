@@ -103,6 +103,8 @@ function PageSection(props) {
   const [partiesPage, setPartiesPage] = useState([])
   const [listePartiesPage, setListePartiesPage] = useState('')
   const [typeSelectionne, setTypeSelectionne] = useState('texte')
+  const [showBrowserFichiers, setShowBrowserFichiers] = useState(false)
+  const [mediaSelectionne, setMediaSelectionne] = useState('')
 
   const connexionWorker = props.rootProps.connexionWorker
 
@@ -168,6 +170,13 @@ function PageSection(props) {
 
   return (
     <>
+      <BrowserMediaGrosfichiers show={showBrowserFichiers}
+                                hide={_=>setShowBrowserFichiers(false)}
+                                selectionner={setMediaSelectionne}
+                                rootProps={props.rootProps} />
+
+      <Button onClick={_=>{setMediaSelectionne(''); setShowBrowserFichiers(true)}}>Browser</Button>
+
       <h2>Modifier page{' '}
         <RenderChampMultilingue champ={props.section.entete} defaut={props.section.section_id}/>
       </h2>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import {Row, Col, Button, Card} from 'react-bootstrap'
 // import {Link, useParams} from 'react-router-dom'
 import { proxy as comlinkProxy } from 'comlink'
@@ -120,7 +120,9 @@ function CardView(props) {
 
   const _chargerCle = fuuid => {
     const {nomUsager, connexionWorker} = props.rootProps
-    return chargerCle(nomUsager, connexionWorker, fuuid, {permission: props.permission})
+    const opts = {}
+    if(props.permission) opts.permission = props.permission
+    return chargerCle(nomUsager, connexionWorker, fuuid, opts)
   }
 
   var fuuid = item.fuuid_v_courante
@@ -242,7 +244,10 @@ class LigneView extends React.Component {
   })
 
   chargerCle = fuuid => {
-    return chargerCle(this.props.rootProps.nomUsager, this.props.rootProps.connexionWorker, fuuid, {permission: this.props.permission})
+    const opts = {}
+    if(this.props.permission) opts.permission = this.props.permission
+    return chargerCle(
+      this.props.rootProps.nomUsager, this.props.rootProps.connexionWorker, fuuid, opts)
   }
 
   render() {

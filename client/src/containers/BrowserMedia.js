@@ -93,9 +93,6 @@ function ListeCollections(props) {
     <>
       <h3>Collections disponibles</h3>
       <Nav variant="pills" className="flex-column" onSelect={props.setCollectionSelectionnee}>
-        <Nav.Item key='personnelle'>
-          <Nav.Link eventKey='personnelle'>Personnelle</Nav.Link>
-        </Nav.Item>
         {collections}
       </Nav>
     </>

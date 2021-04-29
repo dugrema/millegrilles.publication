@@ -203,4 +203,20 @@ async function getContenuCollection(socket, params) {
   }
 }
 
+async function getCleFichier(socket, params) {
+  const amqpdao = socket.amqpdao
+  try {
+    const domaine = params['en-tete'].domaine
+    if(domaine !== 'MaitreDesCles.dechiffrage') {
+      return {err: 'Mauvais domaine ' + domaine}
+    }
+    const cleReponse = await amqpdao.transmettreRequete(
+      domaine, params, {noformat: true, decoder: true})
+    return cleReponse
+  } catch(err) {
+    debug("Erreur getCleFichier\n%O", err)
+    return {err}
+  }
+}
+
 module.exports = {configurerEvenements}

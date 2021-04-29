@@ -113,3 +113,21 @@ div.table div.table-header {
     display: none;
   }
 }
+
+.fichier-browsing-img {
+  width: 10em;
+  height: 10em;
+  padding: 0.2em;
+  margin: 0.3em;
+  float: left;
+}
+
+.fichier-browsing-img img {
+  width: 9.5em;
+  height: 9.5em;
+  object-fit: cover;
+}
+
+.selectionnable {
+  cursor: pointer;
+}
