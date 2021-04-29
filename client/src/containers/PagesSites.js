@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import {Row, Col, Nav, Button, ButtonGroup, InputGroup, Form} from 'react-bootstrap'
+import {Row, Col, Nav, Button, ButtonGroup, InputGroup, Form, Card, CardDeck} from 'react-bootstrap'
 import parse from 'html-react-parser'
 
 import {RenderChampMultilingue, ChampSummernoteMultilingue, RenderValeursMultilingueRows} from './ComponentMultilingue'
@@ -239,7 +239,7 @@ function RenderPartiePage(props) {
       props.rootProps.connexionWorker, partiepageId, contenuEditionEnCours,
       props.partiesPage, props.setPartiesPage
     )
-    // console.debug("Reponse maj section : %O", reponse)
+    console.debug("Reponse maj partie page : %O", reponse)
     setContenuEditionEnCours('')
     setEditionEnCours(false)
   }
@@ -354,32 +354,45 @@ function PageTypeTexte(props) {
 
 function PageTypeColonnes(props) {
   const [colonneIdx, setColonneIdx] = useState('')
-  const [colonnes, setColonnes] = useState('')
+  // const [colonnes, setColonnes] = useState('')
+  const contenuEditionEnCours = props.contenuEditionEnCours || {}
+  const colonnes = contenuEditionEnCours.colonnes || props.partiePage.colonnes || []
 
   const ajouterColonne = _ => {
-    setColonnes([...colonnes, {}])
+    const contenuEditionMaj = {...contenuEditionEnCours}
+    const colonnesMaj = [...colonnes, {}]
+    contenuEditionMaj.colonnes = colonnesMaj
+    props.setContenuEditionEnCours(contenuEditionMaj)
   }
   const supprimerColonne = _ => {
     if(colonnes) {
+      const contenuEditionMaj = {...contenuEditionEnCours}
       const idxCourant = Number(colonneIdx)
-      setColonnes(colonnes.filter((_, idxCol)=>idxCol !== idxCourant))
+      contenuEditionMaj.colonnes = colonnes.filter((_, idxCol)=>idxCol !== idxCourant)
+      props.setContenuEditionEnCours(contenuEditionMaj)
     }
     setColonneIdx('')
   }
 
   if(props.editionEnCours) {
     // Mode edition, on affiche une seule colonne a la fois
-    const colonnesCourantes = colonnes || props.section.colonnes || []
-
     var contenuColonne = ''
     if(colonneIdx) {
-      contenuColonne = colonnesCourantes[colonneIdx] || ''
+      contenuColonne = colonnes[colonneIdx] || ''
+    }
+
+    const majColonne = contenu => {
+      const contenuEditionMaj = {...contenuEditionEnCours}
+      contenuEditionMaj.colonnes = [...colonnes]
+      contenuEditionMaj.colonnes[colonneIdx] = contenu
+      // console.debug("MAJ Colonne : %O", contenuEditionMaj)
+      props.setContenuEditionEnCours(contenuEditionMaj)
     }
 
     return (
       <>
         <Nav variant="pills" onSelect={setColonneIdx}>
-          {colonnesCourantes.map((item, idx)=>{
+          {colonnes.map((item, idx)=>{
             return (
               <Nav.Item key={idx}><Nav.Link eventKey={idx}>Colonne {idx}</Nav.Link></Nav.Item>
             )
@@ -387,20 +400,80 @@ function PageTypeColonnes(props) {
           <Nav.Item><Nav.Link onClick={ajouterColonne}><i className="fa fa-plus"/></Nav.Link></Nav.Item>
         </Nav>
 
-        <Button onClick={supprimerColonne}>Supprimer</Button>
-
-        <PageColonne contenu={contenuColonne} />
+        {colonneIdx!==''?
+          <>
+            <Button onClick={supprimerColonne}>Supprimer</Button>
+            <PageColonneEdition contenu={colonnes[colonneIdx]}
+                                site={props.site}
+                                section={props.section}
+                                onChange={majColonne} />
+          </>
+          :'Selectionner une colonne'
+        }
       </>
     )
   }
 
   // Mode affichage colonnes
-  if(!props.section.colonnes) return ''
+  const colonnesCourantes = props.partiePage.colonnes
+  if(!colonnesCourantes) return ''
+
+  return (
+    <CardDeck>
+      {colonnesCourantes.map((item, idx)=>{
+        return (
+          <PageColonneAffichage key={idx}
+                                contenu={item}
+                                site={props.site}
+                                section={props.section} />
+        )
+      })}
+    </CardDeck>
+  )
 
 }
 
-function PageColonne(props) {
-  return <p>Colonne</p>
+function PageColonneEdition(props) {
+  const contenu = props.contenu || {}
+  var champHtml = contenu.html || props.site.languages.reduce((acc, l)=>{
+    acc[l] = ''
+    return acc
+  }, {})
+
+  const changerContenu = params => {
+    // console.debug("Changer contenu texte summernote : %O", params)
+    const htmlEdit = {...champHtml} // Shallow copy
+    htmlEdit[params.langue] = params.value
+    const contenuMaj = {...contenu, html: htmlEdit}
+    props.onChange(contenuMaj)
+  }
+
+  return (
+    <ChampSummernoteMultilingue name="html"
+                                languages={props.site.languages}
+                                values={champHtml}
+                                onChange={changerContenu} />
+  )
+}
+
+function PageColonneAffichage(props) {
+  const contenu = props.contenu || {}
+  var champHtml = contenu.html || props.site.languages.reduce((acc, l)=>{
+    acc[l] = ''
+    return acc
+  }, {})
+  // Mode affichage
+  var htmlParsed = Object.keys(champHtml).reduce((acc, lang)=>{
+    acc[lang] = parse(champHtml[lang])
+    return acc
+  }, {})
+  return (
+    <Card>
+      <Card.Body>
+        <RenderValeursMultilingueRows champ={htmlParsed} languages={props.site.languages}/>
+      </Card.Body>
+    </Card>
+  )
 }
 
 function PageTypeMedia(props) {
