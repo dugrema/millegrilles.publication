@@ -295,7 +295,9 @@ function RenderPartiePage(props) {
             {editionEnCours?
               <>
                 <Button onClick={sauvegarder}>Sauvegarder</Button>
-                <Button variant="secondary" onClick={_=>setEditionEnCours(false)}>Annuler</Button>
+                <Button variant="secondary" onClick={_=>{setEditionEnCours(false); setContenuEditionEnCours('')}}>
+                  Annuler
+                </Button>
               </>
               :
               <Button variant="secondary" onClick={_=>setEditionEnCours(true)}>Editer</Button>
@@ -496,7 +498,7 @@ function PageColonneAffichage(props) {
 }
 
 function PageTypeMedia(props) {
-  //const [media, setMedia] = useState('')
+  const [latchMedia, setLatchMedia] = useState(false)
 
   const contenuEditionEnCours = props.contenuEditionEnCours || ''
   const media = contenuEditionEnCours.media || props.partiePage.media || ''
@@ -508,14 +510,16 @@ function PageTypeMedia(props) {
   }
 
   useEffect(_=>{
-    if(props.mediaSelectionne) {
+    if(props.mediaSelectionne && latchMedia) {
       console.debug("Changement media selectionne: %O", props.mediaSelectionne)
       setMedia(props.mediaSelectionne)
+      setLatchMedia(false)
     }
   }, [props.mediaSelectionne])
 
   const selectionnerMedia = event => {
     // Appeler avec callback vers notre setMedia
+    setLatchMedia(true)  // Permet d'ecouter le changement de media
     props.selectionnerMedia(setMedia)
   }
 
