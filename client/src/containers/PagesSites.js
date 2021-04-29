@@ -4,7 +4,7 @@ import parse from 'html-react-parser'
 
 import {RenderChampMultilingue, ChampSummernoteMultilingue, RenderValeursMultilingueRows} from './ComponentMultilingue'
 import BrowserMediaGrosfichiers from './BrowserMedia'
-import {CardView} from './AfficherMedia'
+import {CardView, CardBodyView} from './AfficherMedia'
 
 export default function PagesSites(props) {
 
@@ -432,7 +432,12 @@ function PageTypeColonnes(props) {
             <PageColonneEdition contenu={colonnes[colonneIdx]}
                                 site={props.site}
                                 section={props.section}
-                                onChange={majColonne} />
+                                onChange={majColonne}
+                                partiePage={props.partiePage}
+                                mediaSelectionne={props.mediaSelectionne}
+                                partiePageIdMedia={props.partiePageIdMedia}
+                                selectionnerMedia={props.selectionnerMedia}
+                                rootProps={props.rootProps} />
           </>
           :'Selectionner une colonne'
         }
@@ -451,7 +456,8 @@ function PageTypeColonnes(props) {
           <PageColonneAffichage key={idx}
                                 contenu={item}
                                 site={props.site}
-                                section={props.section} />
+                                section={props.section}
+                                rootProps={props.rootProps} />
         )
       })}
     </CardDeck>
@@ -460,11 +466,24 @@ function PageTypeColonnes(props) {
 }
 
 function PageColonneEdition(props) {
+
+  useEffect(_=>{
+    if(props.mediaSelectionne && props.partiePageIdMedia === props.partiePage.partiepage_id) {
+      console.debug("Changement media selectionne: %O", props.mediaSelectionne)
+      setMedia(props.mediaSelectionne)
+    }
+  }, [props.mediaSelectionne])
+
   const contenu = props.contenu || {}
   var champHtml = contenu.html || props.site.languages.reduce((acc, l)=>{
     acc[l] = ''
     return acc
   }, {})
+
+  const selectionnerMedia = event => {
+    // Appeler avec callback vers notre setMedia
+    props.selectionnerMedia(props.partiePage.partiepage_id)
+  }
 
   const changerContenu = params => {
     // console.debug("Changer contenu texte summernote : %O", params)
@@ -474,11 +493,31 @@ function PageColonneEdition(props) {
     props.onChange(contenuMaj)
   }
 
+  const setMedia = fichier => {
+    const contenuMaj = {...contenu, media: fichier}
+    props.onChange(contenuMaj)
+  }
+
+  const media = contenu.media || props.partiePage.media || ''
+
   return (
-    <ChampSummernoteMultilingue name="html"
-                                languages={props.site.languages}
-                                values={champHtml}
-                                onChange={changerContenu} />
+    <>
+      <Row>
+        <Col>
+          <Button onClick={selectionnerMedia}>Choisir media</Button>
+        </Col>
+      </Row>
+      {media?
+        <CardView item={media}
+                  usePoster={true}
+                  rootProps={props.rootProps} />
+        :''
+      }
+      <ChampSummernoteMultilingue name="html"
+                                  languages={props.site.languages}
+                                  values={champHtml}
+                                  onChange={changerContenu} />
+    </>
   )
 }
 
@@ -493,13 +532,23 @@ function PageColonneAffichage(props) {
     acc[lang] = parse(champHtml[lang])
     return acc
   }, {})
-  return (
-    <Card>
-      <Card.Body>
+
+  if(contenu.media) {
+    return (
+      <CardBodyView item={contenu.media}
+                    rootProps={props.rootProps}>
         <RenderValeursMultilingueRows champ={htmlParsed} languages={props.site.languages}/>
-      </Card.Body>
-    </Card>
-  )
+      </CardBodyView>
+    )
+  } else {
+    return (
+      <Card>
+        <Card.Body>
+          <RenderValeursMultilingueRows champ={htmlParsed} languages={props.site.languages}/>
+        </Card.Body>
+      </Card>
+    )
+  }
 }
 
 function PageTypeMedia(props) {

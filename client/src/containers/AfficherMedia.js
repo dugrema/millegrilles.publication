@@ -110,13 +110,6 @@ export async function chargerCle(nomUsager, connexionWorker, fuuid, opts) {
 
 export function CardView(props) {
   const item = props.item
-  // const preview = '/place/' + item.preview
-  // const url = '/place/' + item.src
-  // return (
-  //   <Card className="fichier-browsing-img">
-  //     <Card.Img variant="top" src={preview} onClick={_=>props.setSelection(props.idx)} />
-  //   </Card>
-  // )
 
   const _chargerCle = fuuid => {
     const {nomUsager, connexionWorker} = props.rootProps
@@ -140,6 +133,38 @@ export function CardView(props) {
                      chargerCle={_chargerCle}
                      keepCached={props.keepCached}
                      estPublique={props.estPublique} />
+    </Card>
+  )
+
+  return card
+}
+
+export function CardBodyView(props) {
+  const item = props.item
+
+  const _chargerCle = fuuid => {
+    const {nomUsager, connexionWorker} = props.rootProps
+    const opts = {}
+    if(props.permission) opts.permission = props.permission
+    return chargerCle(nomUsager, connexionWorker, fuuid, opts)
+  }
+
+  var fuuid = item.fuuid_v_courante
+  var version_courante = item.version_courante
+  if((props.usePreview || props.usePoster) && version_courante) {
+    fuuid = version_courante.fuuid_preview
+  }
+
+  var card = (
+    <Card onClick={props.onClick} data-uuid={item.uuid} className={props.className}>
+      <AfficherImage hachage_bytes={fuuid}
+                     chiffrageWorker={props.rootProps.chiffrageWorker}
+                     chargerCle={_chargerCle}
+                     keepCached={props.keepCached}
+                     estPublique={props.estPublique} />
+      <Card.Body>
+        {props.children}
+      </Card.Body>
     </Card>
   )
 
