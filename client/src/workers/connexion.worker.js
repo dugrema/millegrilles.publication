@@ -11,47 +11,47 @@ function connecter(opts) {
 }
 
 function requeteSites(params) {
-  return connexionClient.emitBlocking('publication/requeteSites', params)
+  return connexionClient.emitBlocking('publication/requeteSites', params, {noformat: true}, {noformat: true})
 }
 
 function requeteSite(siteId) {
-  return connexionClient.emitBlocking('publication/requeteSite', {site_id: siteId})
+  return connexionClient.emitBlocking('publication/requeteSite', {site_id: siteId}, {noformat: true})
 }
 
 function requeteSectionsSite(siteId) {
-  return connexionClient.emitBlocking('publication/requeteSectionsSite', {site_id: siteId})
+  return connexionClient.emitBlocking('publication/requeteSectionsSite', {site_id: siteId}, {noformat: true})
 }
 
 function requeteSection(sectionId) {
-  return connexionClient.emitBlocking('publication/requeteSection', {section_id: sectionId})
+  return connexionClient.emitBlocking('publication/requeteSection', {section_id: sectionId}, {noformat: true})
 }
 
 function requetePosts(post_ids) {
-  return connexionClient.emitBlocking('publication/requetePosts', {post_ids})
+  return connexionClient.emitBlocking('publication/requetePosts', {post_ids}, {noformat: true})
 }
 
 function requeteNoeudsPublics() {
-  return connexionClient.emitBlocking('publication/requeteNoeuds', {})
+  return connexionClient.emitBlocking('publication/requeteNoeuds', {}, {noformat: true})
 }
 
 function requeteCollectionsPubliques() {
-  return connexionClient.emitBlocking('publication/requeteCollectionsPubliques', {})
+  return connexionClient.emitBlocking('publication/requeteCollectionsPubliques', {}, {noformat: true})
 }
 
 function requeteListeCdns() {
-  return connexionClient.emitBlocking('publication/requeteListeCdns', {})
+  return connexionClient.emitBlocking('publication/requeteListeCdns', {}, {noformat: true})
 }
 
 function requeteCleSsh() {
-  return connexionClient.emitBlocking('publication/requeteCleSsh', {})
+  return connexionClient.emitBlocking('publication/requeteCleSsh', {}, {noformat: true})
 }
 
 function requeteForums() {
-  return connexionClient.emitBlocking('publication/requeteForums', {})
+  return connexionClient.emitBlocking('publication/requeteForums', {}, {noformat: true})
 }
 
 function requetePartiesPage(sectionId) {
-  return connexionClient.emitBlocking('publication/requetePartiesPage', {section_id: sectionId})
+  return connexionClient.emitBlocking('publication/requetePartiesPage', {section_id: sectionId}, {noformat: true})
 }
 
 // Commandes
