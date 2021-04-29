@@ -354,31 +354,53 @@ function PageTypeTexte(props) {
 
 function PageTypeColonnes(props) {
   const [colonneIdx, setColonneIdx] = useState('')
+  const [colonnes, setColonnes] = useState('')
 
-  if(!props.section.colonnes) return ''
+  const ajouterColonne = _ => {
+    setColonnes([...colonnes, {}])
+  }
+  const supprimerColonne = _ => {
+    if(colonnes) {
+      const idxCourant = Number(colonneIdx)
+      setColonnes(colonnes.filter((_, idxCol)=>idxCol !== idxCourant))
+    }
+    setColonneIdx('')
+  }
 
   if(props.editionEnCours) {
-    return <p>edition</p>
+    // Mode edition, on affiche une seule colonne a la fois
+    const colonnesCourantes = colonnes || props.section.colonnes || []
+
+    var contenuColonne = ''
+    if(colonneIdx) {
+      contenuColonne = colonnesCourantes[colonneIdx] || ''
+    }
+
+    return (
+      <>
+        <Nav variant="pills" onSelect={setColonneIdx}>
+          {colonnesCourantes.map((item, idx)=>{
+            return (
+              <Nav.Item key={idx}><Nav.Link eventKey={idx}>Colonne {idx}</Nav.Link></Nav.Item>
+            )
+          })}
+          <Nav.Item><Nav.Link onClick={ajouterColonne}><i className="fa fa-plus"/></Nav.Link></Nav.Item>
+        </Nav>
+
+        <Button onClick={supprimerColonne}>Supprimer</Button>
+
+        <PageColonne contenu={contenuColonne} />
+      </>
+    )
   }
 
-  var contenuColonne = ''
-  if(colonneIdx) {
-    contenuColonne = props.section.colonnes[colonneIdx]
-  }
-  const htmlColonne = contenuColonne.html || ''
+  // Mode affichage colonnes
+  if(!props.section.colonnes) return ''
 
-  return (
-    <>
-      <Nav>
-        <Nav.Link>Colonne 1</Nav.Link>
-        <Nav.Link>Colonne 2</Nav.Link>
-        <Nav.Link>Colonne 3</Nav.Link>
-        <Button variant="secondary">Ajouter</Button>
-      </Nav>
+}
 
-      {htmlColonne}
-    </>
-  )
+function PageColonne(props) {
+  return <p>Colonne</p>
 }
 
 function PageTypeMedia(props) {
