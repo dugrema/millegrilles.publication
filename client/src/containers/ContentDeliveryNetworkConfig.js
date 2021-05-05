@@ -107,12 +107,16 @@ function AfficherCdn(props) {
   switch(cdn.type_cdn) {
     case 'ipfs':
       TypeCdn = AfficherCdnIpfs; break
+    case 'ipfs_gateway':
+      TypeCdn = AfficherCdnIpfsGateway; break
     case 'awss3':
       TypeCdn = AfficherCdnAwsS3;
       fctPreparerChangement = preparerParamsChangementAwsS3  // Chiffrer secretAccessKey
       break
     case 'sftp':
       TypeCdn = AfficherCdnSftp; break
+    case 'hiddenService':  // .onion
+      TypeCdn = AfficherCdnHiddenService; break
     default:
       TypeCdn = NonSupporte
   }
@@ -263,8 +267,10 @@ function SelectionTypeCdn(props) {
       <Form.Control as="select" name="type_cdn" onChange={props.changerTypeCdn} value={props.value}>
         <option>Choisir un mode</option>
         <option value='sftp'>SFTP</option>
-        <option value='ipfs'>IPFS</option>
         <option value='awss3'>Amazon Web Services S3</option>
+        <option value='hiddenService'>TOR Hidden Service (.onion)</option>
+        <option value='ipfs'>IPFS</option>
+        <option value='ipfs_gateway'>IPFS gateway</option>
       </Form.Control>
     </Form.Group>
   )
@@ -428,6 +434,64 @@ function AfficherCdnSftp(props) {
       </p>
 
       <pre>{clePublique}</pre>
+    </>
+  )
+}
+
+function AfficherCdnHiddenService(props) {
+  const {cdn, configuration, changerChamp, changerNombre, afficherChamp} = props
+
+  // Charger adresse .onion (du service onionize...)
+  const [adresseOnion, setAdresseOnion] = useState('')
+  useEffect(_=>{
+    // TODO Charger adresse .onion de onionize
+  }, [])
+
+  return (
+    <>
+      <h3>Configuration du site via Hidden Service (relai tor)</h3>
+
+      <Alert variant="info">
+        <p>Le service "onionize" doit deja etre demarre.</p>
+      </Alert>
+
+      <Form.Row>
+        <Form.Group as={Col} controlId="accesPointUrl">
+          <Form.Label>URL TOR (.onion) d'acces aux ressources</Form.Label>
+          <Form.Control type="url"
+                        name="accesPointUrl"
+                        value={afficherChamp('accesPointUrl')}
+                        placeholder="Exemple : https://abcdadresselongue1234.onion/...path..."
+                        onChange={changerChamp} />
+        </Form.Group>
+      </Form.Row>
+
+      <p>Adresse TOR : {adresseOnion}</p>
+    </>
+  )
+}
+
+function AfficherCdnIpfsGateway(props) {
+  const {cdn, configuration, changerChamp, changerNombre, afficherChamp} = props
+
+  return (
+    <>
+      <h3>Configuration du site via IPFS Gateway</h3>
+
+      <Alert variant="info">
+        <p>Le service ipfs doit etre demarre et un partage IPFS deja configure.</p>
+      </Alert>
+
+      <Form.Row>
+        <Form.Group as={Col} controlId="accesPointUrl">
+          <Form.Label>URL d'acces aux gateway IPFS</Form.Label>
+          <Form.Control type="url"
+                        name="accesPointUrl"
+                        value={afficherChamp('accesPointUrl')}
+                        placeholder="Exemple : https://ipfs.io"
+                        onChange={changerChamp} />
+        </Form.Group>
+      </Form.Row>
     </>
   )
 }
