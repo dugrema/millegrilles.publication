@@ -117,6 +117,8 @@ function AfficherCdn(props) {
       TypeCdn = AfficherCdnSftp; break
     case 'hiddenService':  // .onion
       TypeCdn = AfficherCdnHiddenService; break
+    case 'manuel':  // .onion
+      TypeCdn = AfficherCdnManuel; break
     default:
       TypeCdn = NonSupporte
   }
@@ -271,6 +273,7 @@ function SelectionTypeCdn(props) {
         <option value='hiddenService'>TOR Hidden Service (.onion)</option>
         <option value='ipfs'>IPFS</option>
         <option value='ipfs_gateway'>IPFS gateway</option>
+        <option value='manuel'>Manuel</option>
       </Form.Control>
     </Form.Group>
   )
@@ -495,6 +498,32 @@ function AfficherCdnIpfsGateway(props) {
     </>
   )
 }
+
+function AfficherCdnManuel(props) {
+  const {cdn, configuration, changerChamp, changerNombre, afficherChamp} = props
+
+  return (
+    <>
+      <h3>Configuration point d'acces manuel</h3>
+
+      <Alert variant="info">
+        <p>Le contenu doit etre upload manuellement ou gere via un autre CDN.</p>
+      </Alert>
+
+      <Form.Row>
+        <Form.Group as={Col} controlId="accesPointUrl">
+          <Form.Label>URL d'acces aux ressources</Form.Label>
+          <Form.Control type="url"
+                        name="accesPointUrl"
+                        value={afficherChamp('accesPointUrl')}
+                        placeholder="Exemple : https://monsite.com"
+                        onChange={changerChamp} />
+        </Form.Group>
+      </Form.Row>
+    </>
+  )
+}
+
 
 function NonSupporte(props) {
   return (
