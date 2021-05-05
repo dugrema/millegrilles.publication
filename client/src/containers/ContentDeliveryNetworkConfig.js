@@ -350,13 +350,15 @@ function AfficherCdnAwsS3(props) {
 
 function AfficherCdnSftp(props) {
   const {cdn, configuration, changerChamp, changerNombre, afficherChamp} = props
-
   const [cleSsh, setCleSsh] = useState('')
   useEffect(_=>{
     chargerCleSftp(props.rootProps.connexionWorker, setCleSsh)
   }, [])
 
-  const clePublique = cleSsh?cleSsh.clePublique:''
+  const keyType = configuration.keyType || cdn.keyType || 'ed25519'
+
+  var clePublique = cleSsh.clePubliqueEd25519
+  if(keyType === 'rsa') clePublique = cleSsh.clePubliqueRsa
 
   return (
     <>
@@ -407,6 +409,19 @@ function AfficherCdnSftp(props) {
       </Form.Row>
 
       <h3>Cle publique de connexion SSH</h3>
+
+      <Form.Group>
+        <Form.Label>Type de cle pour l'authentification</Form.Label>
+        <Form.Check type='radio' name='keyType'
+                    value='ed25519' label='Ed25519' id='keytype-ed25519'
+                    checked={keyType === 'ed25519'}
+                    onChange={changerChamp} />
+        <Form.Check type='radio' name='keyType'
+                    value='rsa' label='RSA' id='keytype-rsa'
+                    checked={keyType === 'rsa'}
+                    onChange={changerChamp} />
+      </Form.Group>
+
       <p>
         Installer (copier) la cle suivante dans .ssh/authorized_keys de
         l'usager sur le serveur de destination.
