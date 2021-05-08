@@ -643,7 +643,7 @@ async function chargerListeSites(connexionWorker, setListeSites) {
 async function chargerListeSections(connexionWorker, sectionId, setListeSections) {
   // console.debug("Charger liste : %s", sectionId)
   var sections = await connexionWorker.requeteSectionsSite(sectionId)
-  sections = sections.filter(section=>section.type_section === 'pages')
+  sections = sections.filter(section=>section.type_section === 'page')
   setListeSections(sections)
 }
 

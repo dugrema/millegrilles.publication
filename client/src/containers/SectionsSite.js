@@ -168,7 +168,7 @@ export default class SectionsSite extends React.Component {
             <ButtonGroup>
               <Button variant="secondary" onClick={this.ajouterSection} value="fichiers">Fichiers</Button>
               <Button variant="secondary" onClick={this.ajouterSection} value="album">Album</Button>
-              <Button variant="secondary" onClick={this.ajouterSection} value="pages">Pages</Button>
+              <Button variant="secondary" onClick={this.ajouterSection} value="page">Pages</Button>
               <Button variant="secondary" onClick={this.ajouterSection} value="forums">Forums</Button>
             </ButtonGroup>
           </Col>
@@ -294,7 +294,7 @@ function AfficherSection(props) {
   switch(section.type_section) {
     case 'fichiers': TypeSection = SectionFichiers; break
     case 'album': TypeSection = SectionFichiers; break
-    case 'pages': TypeSection = SectionVide; break
+    case 'page': TypeSection = SectionVide; break
     case 'forums': TypeSection = SectionForums; break
     default: TypeSection = TypeSectionInconnue
   }
