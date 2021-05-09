@@ -413,66 +413,44 @@ function SectionFichiers(props) {
   const section = props.section,
         configuration = props.configuration  // valeurs en memoire
 
-  let toutesCollectionsInclues = null
-  if(configuration.toutes_collections !== undefined) {
-    toutesCollectionsInclues = configuration.toutes_collections?true:false
-  } else {
-    toutesCollectionsInclues = section.toutes_collections?true:false
-  }
-
   var collectionsSelectionnees = configuration.collections || section.collections || []
-
-  var collectionsPubliques = ''
-  if(!toutesCollectionsInclues && props.collectionsPubliques) {
-    collectionsPubliques = props.collectionsPubliques.map(item=>{
-      return (
-        <Form.Row key={item.uuid}>
-          <Form.Check id={"collections-" + item.uuid} key={item.uuid}
-                      type="checkbox"
-                      label={item.nom_collection}
-                      name="collections"
-                      value={item.uuid}
-                      checked={collectionsSelectionnees.includes(item.uuid)}
-                      onChange={props.toggleListValue} />
-        </Form.Row>
-      )
-    })
-  }
 
   return (
     <>
-      <Form.Row>
-        <Form.Group as={Col} md={6} lg={5}>
-          <Form.Label>Choix des collections de fichiers</Form.Label>
-          <Form.Check id={"collections-toutes"}
-                      type="radio"
-                      label={"Toutes les collections publiques" + (props.site.securite==='2.prive'?' et privees':'')}
-                      name="toutes_collections"
-                      checked={toutesCollectionsInclues}
-                      value="true"
-                      onChange={props.changerChampBool} />
-          <Form.Check id={'collections-selectionnees'}
-                      type="radio"
-                      label="Collections selectionnees uniquement"
-                      name="toutes_collections"
-                      checked={!toutesCollectionsInclues}
-                      value="false"
-                      onChange={props.changerChampBool} />
-        </Form.Group>
-
-        {!toutesCollectionsInclues?
-          <Form.Group as={Col} md={6} lg={7}>
-            <Form.Label>Selectionner collections de fichiers a publier</Form.Label>
-            {collectionsPubliques}
-          </Form.Group>
-          :''
-        }
-
-      </Form.Row>
-
+      <Form.Group>
+        <Form.Label>Selectionner collections de fichiers a publier</Form.Label>
+        <CollectionsPubliquesCheck collectionsPubliques={props.collectionsPubliques}
+                                   collectionsSelectionnees={collectionsSelectionnees}
+                                   toggleListValue={props.toggleListValue} />
+      </Form.Group>
     </>
   )
 
+}
+
+function CollectionsPubliquesCheck(props) {
+  if(!props.collectionsPubliques) return ''
+
+  const collectionsTriees = [...props.collectionsPubliques]
+  collectionsTriees.sort((a,b)=>{
+    const nomA = a.nom_collection || a.uuid,
+          nomB = b.nom_collection || b.uuid
+    return nomA.localeCompare(nomB)
+  })
+
+  return collectionsTriees.map(item=>{
+    return (
+      <Form.Row key={item.uuid}>
+        <Form.Check id={"collections-" + item.uuid} key={item.uuid}
+                    type="checkbox"
+                    label={item.nom_collection}
+                    name="collections"
+                    value={item.uuid}
+                    checked={props.collectionsSelectionnees.includes(item.uuid)}
+                    onChange={props.toggleListValue} />
+      </Form.Row>
+    )
+  })
 }
 
 function SectionVide(props) {
