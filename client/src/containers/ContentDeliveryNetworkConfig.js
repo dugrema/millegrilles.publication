@@ -117,6 +117,8 @@ function AfficherCdn(props) {
       TypeCdn = AfficherCdnSftp; break
     case 'hiddenService':  // .onion
       TypeCdn = AfficherCdnHiddenService; break
+    case 'mq':
+      TypeCdn = AfficherCdnMq; break
     case 'manuel':  // .onion
       TypeCdn = AfficherCdnManuel; break
     default:
@@ -271,6 +273,7 @@ function SelectionTypeCdn(props) {
         <option value='sftp'>SFTP</option>
         <option value='awss3'>Amazon Web Services S3</option>
         <option value='hiddenService'>TOR Hidden Service (.onion)</option>
+        <option value='mq'>Noeud (MQ)</option>
         <option value='ipfs'>IPFS</option>
         <option value='ipfs_gateway'>IPFS gateway</option>
         <option value='manuel'>Manuel</option>
@@ -441,10 +444,38 @@ function AfficherCdnSftp(props) {
   )
 }
 
+function AfficherCdnMq(props) {
+  const {cdn, configuration, changerChamp, changerNombre, afficherChamp} = props
+
+  const [noeudId, setNoeudId] = useState('')
+
+  return (
+    <>
+      <h3>Configuration du site via MQ</h3>
+
+      <Alert variant="info">
+        <p>
+          Le noeud (public, prive ou protege) doit etre configure separement et
+          vitrine doit etre deploye via Coup D'Oeil.
+        </p>
+      </Alert>
+
+      <Form.Row>
+        <Form.Group as={Col} controlId="noeud_id">
+          <Form.Label>Noeud Id</Form.Label>
+          <Form.Control name="noeud_id"
+                        value={afficherChamp('noeud_id')}
+                        placeholder="Exemple : 01407632-5a8f-4727-b593-9afa94447dea"
+                        onChange={changerChamp} />
+        </Form.Group>
+      </Form.Row>
+    </>
+  )
+}
+
 function AfficherCdnHiddenService(props) {
   const {cdn, configuration, changerChamp, changerNombre, afficherChamp} = props
 
-  // Charger adresse .onion (du service onionize...)
   const [adresseOnion, setAdresseOnion] = useState('')
   useEffect(_=>{
     // TODO Charger adresse .onion de onionize
