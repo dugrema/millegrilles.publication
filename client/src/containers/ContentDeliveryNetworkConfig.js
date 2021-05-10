@@ -460,15 +460,23 @@ function AfficherCdnMq(props) {
         </p>
       </Alert>
 
-      <Form.Row>
-        <Form.Group as={Col} controlId="noeud_id">
-          <Form.Label>Noeud Id</Form.Label>
-          <Form.Control name="noeud_id"
-                        value={afficherChamp('noeud_id')}
-                        placeholder="Exemple : 01407632-5a8f-4727-b593-9afa94447dea"
-                        onChange={changerChamp} />
-        </Form.Group>
-      </Form.Row>
+      <Form.Group as={Col} controlId="noeud_id">
+        <Form.Label>Noeud Id</Form.Label>
+        <Form.Control name="noeud_id"
+                      value={afficherChamp('noeud_id')}
+                      placeholder="Exemple : 01407632-5a8f-4727-b593-9afa94447dea"
+                      onChange={changerChamp} />
+      </Form.Group>
+
+      <Form.Group as={Col} controlId="accesPointUrl">
+        <Form.Label>URL d'acces aux ressources</Form.Label>
+        <Form.Control type="url"
+                      name="accesPointUrl"
+                      value={afficherChamp('accesPointUrl')}
+                      autoComplete="off"
+                      placeholder="Exemple : https://SITE.cloudfront.net/...path..."
+                      onChange={changerChamp} />
+      </Form.Group>
     </>
   )
 }
