@@ -1,5 +1,5 @@
-import React from 'react'
-import {Alert, Nav} from 'react-bootstrap'
+import React, {useState} from 'react'
+import {Alert, Nav, Row, Col, Button} from 'react-bootstrap'
 
 import { VerificationInfoServeur } from './Authentification'
 import { MenuItems } from './Menu'
@@ -152,6 +152,8 @@ function ChoisirSection(props) {
         <Nav.Link eventKey="pagesSites">Pages Sites</Nav.Link>
       </Nav>
 
+      <BoutonsActions connexionWorker={props.rootProps.connexionWorker}/>
+
     </>
   )
 }
@@ -162,5 +164,88 @@ function AlertErreur(props) {
       <Alert.Heading>Erreur</Alert.Heading>
       <pre>{''+props.err}</pre>
     </Alert>
+  )
+}
+
+function BoutonsActions(props) {
+
+  const [confirmation, setConfirmation] = useState('')
+  const [erreur, setErreur] = useState('')
+
+  const connexionWorker = props.connexionWorker
+  const publierChangements = async _ => {
+    console.debug("Publier changements")
+    setConfirmation('')
+    setErreur('')
+    try {
+      const reponse = await connexionWorker.publierChangements()
+      console.debug("Confirmation publier changements : %O", confirmation)
+      setConfirmation('Ok')
+    } catch(err) {
+      setErreur(''+err)
+    }
+  }
+
+  const resetData = async _ => {
+    console.debug("Reset data")
+    setConfirmation('')
+    setErreur('')
+    try {
+      const reponse = await connexionWorker.resetData()
+      console.debug("Confirmation reset data : %O", confirmation)
+      setConfirmation('Ok')
+    } catch(err) {
+      setErreur(''+err)
+    }
+  }
+
+  const resetFichiers = async _ => {
+    console.debug("Reset fichiers")
+    setConfirmation('')
+    setErreur('')
+    try {
+      const reponse = await connexionWorker.resetFichiers()
+      console.debug("Confirmation reset fichiers : %O", confirmation)
+      setConfirmation('Ok')
+    } catch(err) {
+      setErreur(''+err)
+    }
+  }
+
+  return (
+    <>
+      <h3>Actions globales</h3>
+
+      <Alert variant="success" show={confirmation?true:false}>{''+confirmation}</Alert>
+      <Alert variant="danger" show={erreur?true:false}>{''+erreur}</Alert>
+
+      <Row>
+        <Col lg={8}>
+          Publier tous les changements.
+        </Col>
+        <Col>
+          <Button onClick={publierChangements}>Publier changements</Button>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col lg={8}>
+          Reset les documents (siteconfig, pages, liste de fichiers). N'affecte pas
+          le contenu des fichiers.
+        </Col>
+        <Col>
+          <Button onClick={resetData}>Reset data</Button>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col lg={8}>
+          Reset les fichiers. Permet de republier tous les fichiers sur tous les CDNs.
+        </Col>
+        <Col>
+          <Button onClick={resetFichiers}>Reset fichiers</Button>
+        </Col>
+      </Row>
+    </>
   )
 }

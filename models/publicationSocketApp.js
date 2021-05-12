@@ -37,6 +37,15 @@ function configurerEvenements(socket) {
       {eventName: 'publication/majPartiePage', callback: (transaction, cb) => {
         soumettreTransaction(socket, transaction, 'Publication.majPartiePage', cb)
       }},
+      {eventName: 'publication/publierChangements', callback: cb => {
+        soumettreCommande(socket, {}, 'Publication.publierComplet', cb)
+      }},
+      {eventName: 'publication/resetData', callback: cb => {
+        soumettreCommande(socket, {ignorer: ['fichier']}, 'Publication.resetRessources', cb)
+      }},
+      {eventName: 'publication/resetFichiers', callback: cb => {
+        soumettreCommande(socket, {}, 'Publication.resetRessources', cb)
+      }},
       {eventName: 'grosfichiers/getCollections', callback: async (params, cb) => {cb(await getCollections(socket, params))}},
       {eventName: 'grosfichiers/getContenuCollection', callback: async (params, cb) => {cb(await getContenuCollection(socket, params))}},
       {eventName: 'maitrecles/getCleFichier', callback: async (params, cb) => {cb(await getCleFichier(socket, params))}},
@@ -130,7 +139,7 @@ async function executerRequete(domaineAction, socket, params, cb) {
 
 async function soumettreTransaction(socket, transaction, domaineValide, cb) {
   // Verifie le domaine d'une transaction et la transmet a MQ
-  console.debug("Recu %s : %O", domaineValide, transaction)
+  debug("Recu %s : %O", domaineValide, transaction)
   try {
     if(transaction['en-tete'].domaine === domaineValide) {
       const amqpdao = socket.amqpdao
@@ -140,7 +149,20 @@ async function soumettreTransaction(socket, transaction, domaineValide, cb) {
       return cb({err: 'Mauvais domaine pour ' + domaineValide + ' : ' + transaction.domaine})
     }
   } catch(err) {
-    console.error("%s %O", domaineValide, err)
+    console.error("publicationSocketApp.soumettreTransaction %s %O", domaineValide, err)
+    return cb({err: ''+err})
+  }
+}
+
+async function soumettreCommande(socket, commande, domaine, cb) {
+  // Verifie le domaine d'une transaction et la transmet a MQ
+  debug("Soumettre commande %s : %O", domaine, commande)
+  try {
+    const amqpdao = socket.amqpdao
+    const reponse = await amqpdao.transmettreCommande(domaine, commande)
+    return cb(reponse)
+  } catch(err) {
+    console.error("publicationSocketApp.soumettreCommande %s %O", domaine, err)
     return cb({err: ''+err})
   }
 }

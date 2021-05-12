@@ -112,6 +112,18 @@ function supprimerCdn(transaction) {
   return connexionClient.emitBlocking('publication/supprimerCdn', transaction, {domaine: 'Publication.supprimerCdn'})
 }
 
+function publierChangements() {
+  return connexionClient.emitBlocking('publication/publierChangements')
+}
+
+function resetData() {
+  return connexionClient.emitBlocking('publication/resetData')
+}
+
+function resetFichiers() {
+  return connexionClient.emitBlocking('publication/resetFichiers')
+}
+
 comlinkExpose({
   ...connexionClient,
   connecter,  // Override de connexionClient.connecter
@@ -125,4 +137,5 @@ comlinkExpose({
   creerSite, majSite, majSection, majCdn, supprimerCdn,
   ajouterPartiePage, majPartiePage,
 
+  publierChangements, resetData, resetFichiers,
 })
