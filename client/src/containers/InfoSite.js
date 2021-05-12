@@ -126,6 +126,26 @@ export default class InfoSite extends React.Component {
     this.setState({languages})
   }
 
+  ajouterDomaine = domaine => {
+    const listeDomaines = this.state.listeDomaines || this.props.site.listeDomaines || []
+    listeDomaines.push(domaine)
+    this.setState({listeDomaines})
+  }
+
+  supprimerDomaine = idx => {
+    var listeDomaines = this.state.listeDomaines || this.props.site.listeDomaines || []
+    listeDomaines = [...listeDomaines]
+    listeDomaines.splice(idx, 1)
+    this.setState({listeDomaines})
+  }
+
+  changerDomaine = (idx, domaine) => {
+    var listeDomaines = this.state.listeDomaines || this.props.site.listeDomaines || []
+    listeDomaines = [...listeDomaines]
+    listeDomaines[idx] = domaine
+    this.setState({listeDomaines})
+  }
+
   ajouterSocketio = socketio => {
     const listeSocketio = this.state.listeSocketio || this.props.site.listeSocketio || []
     listeSocketio.push(socketio)
@@ -164,7 +184,7 @@ export default class InfoSite extends React.Component {
     const domaineAction = 'Publication.majSite'
     var transaction = {}
 
-    const champsFormulaire = ['nom_site', 'languages', 'titre', 'listeCdn', 'securite', 'listeSocketio']
+    const champsFormulaire = ['nom_site', 'languages', 'titre', 'listeCdn', 'securite', 'listeSocketio', 'listeDomaines']
 
     champsFormulaire.forEach(item=>{
       if(this.state[item]) transaction[item] = this.state[item]
@@ -225,6 +245,9 @@ export default class InfoSite extends React.Component {
                         ajouterUrl={this.ajouterUrl}
                         ajouterCdn={this.ajouterCdn}
                         retirerCdn={this.retirerCdn}
+                        ajouterDomaine={this.ajouterDomaine}
+                        supprimerDomaine={this.supprimerDomaine}
+                        changerDomaine={this.changerDomaine}
                         ajouterSocketio={this.ajouterSocketio}
                         supprimerSocketio={this.supprimerSocketio}
                         changerSocketio={this.changerSocketio}
@@ -287,6 +310,11 @@ function FormInfoSite(props) {
       <TitreSite languages={props.languages || props.site.languages}
                  titre={props.titre || props.site.titre}
                  changerChampMultilingue={props.changerChampMultilingue} />
+
+      <ListeDomaines listeDomaines={props.listeDomaines || props.site.listeDomaines}
+                     ajouterDomaine={props.ajouterDomaine}
+                     supprimerDomaine={props.supprimerDomaine}
+                     changerDomaine={props.changerDomaine} />
 
       <ListeSocketio listeSocketio={props.listeSocketio || props.site.listeSocketio}
                      ajouterSocketio={props.ajouterSocketio}
@@ -583,6 +611,69 @@ function NoeudsDisponibles(props) {
     </Form.Group>
   )
 
+}
+
+function ListeDomaines(props) {
+  /* Liste de domaines ou urls utilises pour servir ce site */
+
+  const listeDomaines = props.listeDomaines || []
+
+  const [domaineValeur, setDomaineValeur] = useState('')
+  const changeDomaineValeur = event => {
+    setDomaineValeur(event.currentTarget.value)
+  }
+  const ajouterDomaine = _ => {
+    props.ajouterDomaine(domaineValeur)
+    setDomaineValeur('')
+  }
+  const supprimerDomaine = event => {
+    const {value} = event.currentTarget
+    const idx = Number(value)
+    props.supprimerDomaine(idx)
+  }
+  const changerDomaine = event => {
+    const {name, value} = event.currentTarget
+    const idx = Number(name)
+    props.changerDomaine(idx, value)
+  }
+
+  return (
+    <>
+      <Form.Group>
+        <Form.Label>Domaine et URLs du site</Form.Label>
+        <Form.Text>
+          Ces valeurs permettent d'associer un ou plusieurs URLs au site lors du chargement du
+          mapping par Vitrine ou Place.
+          <br/>
+          Notes:
+          <ul>
+            <li>Ces valeurs ne sont pas necessaires pour le site par defaut (page mapping).</li>
+            <li>L'ordre n'a pas d'importance.</li>
+          </ul>
+        </Form.Text>
+
+        {listeDomaines.map((item, idx)=>(
+          <InputGroup key={idx}>
+            <Form.Control type='url'
+                          name={''+idx}
+                          value={item}
+                          onChange={changerDomaine} />
+            <InputGroup.Append>
+              <Button variant='outline-secondary' onClick={supprimerDomaine} value={idx}>Supprimer</Button>
+            </InputGroup.Append>
+          </InputGroup>
+        ))}
+      </Form.Group>
+      <Form.Group>
+        <InputGroup>
+          <Form.Control type='url' value={domaineValeur} onChange={changeDomaineValeur} />
+          <InputGroup.Append>
+            <Button variant='outline-secondary' onClick={ajouterDomaine}>Ajouter</Button>
+          </InputGroup.Append>
+        </InputGroup>
+      </Form.Group>
+    </>
+  )
 }
 
 function ListeSocketio(props) {
