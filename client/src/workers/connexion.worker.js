@@ -124,6 +124,10 @@ function resetFichiers() {
   return connexionClient.emitBlocking('publication/resetFichiers')
 }
 
+function resetWebapps() {
+  return connexionClient.emitBlocking('publication/resetWebapps')
+}
+
 comlinkExpose({
   ...connexionClient,
   connecter,  // Override de connexionClient.connecter
@@ -137,5 +141,5 @@ comlinkExpose({
   creerSite, majSite, majSection, majCdn, supprimerCdn,
   ajouterPartiePage, majPartiePage,
 
-  publierChangements, resetData, resetFichiers,
+  publierChangements, resetData, resetFichiers, resetWebapps,
 })

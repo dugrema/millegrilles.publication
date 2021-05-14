@@ -212,6 +212,19 @@ function BoutonsActions(props) {
     }
   }
 
+  const resetWebapps = async _ => {
+    console.debug("Reset webapps")
+    setConfirmation('')
+    setErreur('')
+    try {
+      const reponse = await connexionWorker.resetWebapps()
+      console.debug("Confirmation reset webapps : %O", confirmation)
+      setConfirmation('Ok')
+    } catch(err) {
+      setErreur(''+err)
+    }
+  }
+
   return (
     <>
       <h3>Actions globales</h3>
@@ -244,6 +257,15 @@ function BoutonsActions(props) {
         </Col>
         <Col>
           <Button onClick={resetFichiers}>Reset fichiers</Button>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col lg={8}>
+          Reset le code des web apps (vitrine et place). Permet de republier le code sur tous les CDNs.
+        </Col>
+        <Col>
+          <Button onClick={resetWebapps}>Reset webapps</Button>
         </Col>
       </Row>
     </>

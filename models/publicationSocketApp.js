@@ -41,10 +41,13 @@ function configurerEvenements(socket) {
         soumettreCommande(socket, {}, 'Publication.publierComplet', cb)
       }},
       {eventName: 'publication/resetData', callback: cb => {
-        soumettreCommande(socket, {ignorer: ['fichier']}, 'Publication.resetRessources', cb)
+        soumettreCommande(socket, {ignorer: ['fichier', 'webapps']}, 'Publication.resetRessources', cb)
       }},
       {eventName: 'publication/resetFichiers', callback: cb => {
-        soumettreCommande(socket, {}, 'Publication.resetRessources', cb)
+        soumettreCommande(socket, {inclure: ['fichier']}, 'Publication.resetRessources', cb)
+      }},
+      {eventName: 'publication/resetWebapps', callback: cb => {
+        soumettreCommande(socket, {inclure: ['webapps']}, 'Publication.resetRessources', cb)
       }},
       {eventName: 'grosfichiers/getCollections', callback: async (params, cb) => {cb(await getCollections(socket, params))}},
       {eventName: 'grosfichiers/getContenuCollection', callback: async (params, cb) => {cb(await getContenuCollection(socket, params))}},
