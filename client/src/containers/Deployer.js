@@ -207,8 +207,11 @@ function AfficherPublicationCdn(props) {
 }
 
 function AfficherErreurs(props) {
-  if(!props.rapport || !props.rapport.erreurs) return (
-    <p>Aucunes erreurs.</p>
+  if(!props.rapport || !props.rapport.erreurs || props.rapport.erreurs.length === 0) return (
+    <>
+      <h3>Erreurs</h3>
+      <p>Aucunes erreurs.</p>
+    </>
   )
 
   // Preparer donnees par CDN
