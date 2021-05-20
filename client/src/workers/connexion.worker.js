@@ -71,6 +71,10 @@ function getCleFichier(listeFuuid, opts) {
   return connexionClient.emitBlocking('maitrecles/getCleFichier', requete, {domaine: domaineAction, attacherCertificat: true})
 }
 
+function getEtatPublication() {
+  return connexionClient.emitBlocking('publication/etatPublication', null, {noformat: true})
+}
+
 // Commandes
 
 function creerSite(transaction) {
@@ -136,7 +140,7 @@ comlinkExpose({
   requeteCollectionsPubliques, requeteListeCdns, requeteCleSsh,
   requeteForums, requeteSectionsSite, requeteSection, requetePartiesPage,
 
-  getCollections, getContenuCollection, getCleFichier,
+  getCollections, getContenuCollection, getCleFichier, getEtatPublication,
 
   creerSite, majSite, majSection, majCdn, supprimerCdn,
   ajouterPartiePage, majPartiePage,
