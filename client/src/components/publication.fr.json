@@ -208,6 +208,7 @@
       "Sites": "Sites",
       "CDNConfig": "CDN",
       "PagesSites": "Pages",
+      "Deployer": "Deployer",
       "changerLangue": "English"
     }
   }

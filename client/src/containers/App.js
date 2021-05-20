@@ -11,6 +11,7 @@ import {splitPEMCerts} from '@dugrema/millegrilles.common/lib/forgecommon'
 import ListeSites from './ListeSites'
 import CDNConfig from './ContentDeliveryNetworkConfig'
 import PagesSites from './PagesSites'
+import Deployer from './Deployer'
 
 import './App.css'
 import $ from 'jquery'
@@ -101,6 +102,8 @@ export class ApplicationPublication extends React.Component {
           ElementPage = ListeSites; break
         case 'pagesSites':
           ElementPage = PagesSites; break
+        case 'deployer':
+          ElementPage = Deployer; break
         default:
           ElementPage = ChoisirSection
       }
@@ -150,6 +153,7 @@ function ChoisirSection(props) {
         <Nav.Link eventKey="listeSites">Sites</Nav.Link>
         <Nav.Link eventKey="cdnConfig">Destinations Content Delivery Network</Nav.Link>
         <Nav.Link eventKey="pagesSites">Pages Sites</Nav.Link>
+        <Nav.Link eventKey="deployer">Deployer</Nav.Link>
       </Nav>
 
       <BoutonsActions connexionWorker={props.rootProps.connexionWorker}/>

@@ -61,6 +61,12 @@ export class MenuItems extends React.Component {
           </Nav.Link>
         </Nav.Item>
 
+        <Nav.Item>
+          <Nav.Link eventKey='deployer'>
+            <Trans>menu.Deployer</Trans>
+          </Nav.Link>
+        </Nav.Item>
+
       </Nav>
     )
   }
