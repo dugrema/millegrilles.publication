@@ -122,6 +122,12 @@ function BoutonsActions(props) {
 function RapportEtat(props) {
 
   const [rapport, setRapport] = useState('')
+  const [dictCdns, setDictCdns] = useState({})
+
+  useEffect(_=>{
+    // Charger metadonnees CDNs (noms)
+    chargerCdns(props.connexionWorker, setDictCdns)
+  }, [])
 
   useEffect(_=>{
     rafraichirDonnees()
@@ -144,18 +150,16 @@ function RapportEtat(props) {
       <h2>Etat de la publication</h2>
 
       <AfficherCdns rapport={rapport}
+                    dictCdns={dictCdns}
                     connexionWorker={props.connexionWorker} />
+
+      <AfficherErreurs rapport={rapport}
+                       dictCdns={dictCdns} />
     </>
   )
 }
 
 function AfficherCdns(props) {
-
-  const [dictCdns, setDictCdns] = useState({})
-  useEffect(_=>{
-    // Charger metadonnees CDNs (noms)
-    chargerCdns(props.connexionWorker, setDictCdns)
-  }, [])
 
   const rapport = props.rapport
   let listeCdns = rapport.cdns || []
@@ -169,13 +173,14 @@ function AfficherCdns(props) {
   }
 
   return listeCdns.map(item=>{
-    const infoCdn = dictCdns[item] || ''
+    const infoCdn = props.dictCdns[item] || ''
     return (
       <div key={item}>
         <h3>{infoCdn.description || item}</h3>
 
         <AfficherPublicationCdn cdnId={item}
                                 rapport={rapport} />
+
       </div>
     )
   })
@@ -199,6 +204,82 @@ function AfficherPublicationCdn(props) {
       </Row>
     )
   })
+}
+
+function AfficherErreurs(props) {
+  if(!props.rapport || !props.rapport.erreurs) return (
+    <p>Aucunes erreurs.</p>
+  )
+
+  // Preparer donnees par CDN
+  const dictErreursParCdn = {}
+  props.rapport.erreurs.forEach(item=>{
+    for(let cdnId in item.distribution_erreur) {
+      let listeErreurs = dictErreursParCdn[cdnId]
+      if(!listeErreurs) {
+        listeErreurs = []
+        dictErreursParCdn[cdnId] = listeErreurs
+      }
+      listeErreurs.push({
+        err: item.distribution_erreur[cdnId],
+        ...item,
+      })
+    }
+  })
+
+  const listeCdnIds = Object.keys(dictErreursParCdn)
+  listeCdnIds.sort()
+
+  return (
+    <>
+      <h3>Erreurs</h3>
+
+      {Object.keys(dictErreursParCdn).map(cdnId=>{
+        const infoCdn = props.dictCdns[cdnId] || ''
+        const nomCdn = infoCdn.description || cdnId
+        return <AfficherErreursCdn key={cdnId}
+                                   cdnId={cdnId}
+                                   nomCdn={nomCdn}
+                                   erreurs={dictErreursParCdn[cdnId]} />
+      })}
+    </>
+  )
+
+}
+
+function AfficherErreursCdn(props) {
+
+  const erreurs = [...props.erreurs]
+  erreurs.sort((a,b)=>{
+    const typeA = a['_mg-libelle'],
+          typeB = b['_mg-libelle'],
+          idA = a.fuuid || a.uuid || a.section_id || a.site_id,
+          idB = b.fuuid || b.uuid || b.section_id || b.site_id
+
+    if(typeA!==typeB) return typeA.localeCompare(typeB)
+    if(idA!==idB) return idA.localeCompare(idB)
+    return 0
+  })
+
+  return (
+    <>
+      <p>CDN: <strong>{props.nomCdn}</strong> ({props.cdnId})</p>
+
+      {erreurs.map(item=>{
+        return (
+          <Row>
+            <Col lg={2}>{item['_mg-libelle']}</Col>
+            <Col lg={5}>
+              <span className="identificateur-tronquer">
+                {item.fuuid || item.uuid || item.section_id || item.site_id}
+              </span>
+            </Col>
+            <Col>{item.err}</Col>
+          </Row>
+        )
+      })}
+    </>
+  )
 }
 
 async function chargerCdns(connexionWorker, setDictCdns) {

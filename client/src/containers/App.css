@@ -131,3 +131,8 @@ div.table div.table-header {
 .selectionnable {
   cursor: pointer;
 }
+
+.identificateur-tronquer {
+  display: block;
+  overflow: hidden;
+}
