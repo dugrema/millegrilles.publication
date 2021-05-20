@@ -4,7 +4,7 @@ import {Alert, Nav, Row, Col, Button} from 'react-bootstrap'
 export default function Deployer(props) {
   return (
     <>
-      <p>Deployer</p>
+      <h2>Deployer</h2>
       <Button onClick={props.retour}>Retour</Button>
 
       <BoutonsActions connexionWorker={props.rootProps.connexionWorker}/>
