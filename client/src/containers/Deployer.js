@@ -109,7 +109,8 @@ function BoutonsActions(props) {
 
       <Row>
         <Col lg={8}>
-          Reset le code des web apps (vitrine et place). Permet de republier le code sur tous les CDNs.
+          Reset le code des web apps (vitrine et place) et le mapping (index.json).
+          Permet de republier le code sur tous les CDNs.
         </Col>
         <Col>
           <Button onClick={resetWebapps}>Reset webapps</Button>

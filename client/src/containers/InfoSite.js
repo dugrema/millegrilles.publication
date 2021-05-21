@@ -286,6 +286,8 @@ function FormInfoSite(props) {
     nomSite = props.site.nom_site
   }
 
+  console.debug("FormInfoSite proppys : %O", props)
+
   return (
     <Form>
 
@@ -293,6 +295,8 @@ function FormInfoSite(props) {
         <Form.Label md={3}>Identificateur unique</Form.Label>
         <div>{props.siteId}</div>
       </Form.Group>
+
+      <InformationIpfsSite site={props.site} />
 
       <Form.Group>
         <Form.Label htmlFor='nom_site'>Nom site</Form.Label>
@@ -861,5 +865,17 @@ function AlertConfirmation(props) {
       <Alert.Heading>Operation completee</Alert.Heading>
       <pre>{'' + props.confirmation}</pre>
     </Alert>
+  )
+}
+
+function InformationIpfsSite(props) {
+  const site = props.site
+  if(!site.ipns_id) return ''
+
+  return (
+    <Form.Group>
+      <Form.Label md={3}>Identificateur IPNS</Form.Label>
+      <div>{site.ipns_id}</div>
+    </Form.Group>
   )
 }
