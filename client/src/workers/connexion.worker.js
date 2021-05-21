@@ -75,6 +75,10 @@ function getEtatPublication() {
   return connexionClient.emitBlocking('publication/etatPublication', null, {noformat: true})
 }
 
+function getEtatSite(site_id) {
+  return connexionClient.emitBlocking('publication/etatSite', {site_id}, {noformat: true})
+}
+
 // Commandes
 
 function creerSite(transaction) {
@@ -141,6 +145,7 @@ comlinkExpose({
   requeteForums, requeteSectionsSite, requeteSection, requetePartiesPage,
 
   getCollections, getContenuCollection, getCleFichier, getEtatPublication,
+  getEtatSite,
 
   creerSite, majSite, majSection, majCdn, supprimerCdn,
   ajouterPartiePage, majPartiePage,

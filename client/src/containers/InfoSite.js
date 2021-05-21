@@ -286,8 +286,6 @@ function FormInfoSite(props) {
     nomSite = props.site.nom_site
   }
 
-  console.debug("FormInfoSite proppys : %O", props)
-
   return (
     <Form>
 
@@ -296,7 +294,8 @@ function FormInfoSite(props) {
         <div>{props.siteId}</div>
       </Form.Group>
 
-      <InformationIpfsSite site={props.site} />
+      <InformationIpfsSite site={props.site}
+                           connexionWorker={props.rootProps.connexionWorker} />
 
       <Form.Group>
         <Form.Label htmlFor='nom_site'>Nom site</Form.Label>
@@ -869,13 +868,39 @@ function AlertConfirmation(props) {
 }
 
 function InformationIpfsSite(props) {
+  const [etatSite, setEtatSite] = useState('')
+  useEffect(_ =>{
+    if(props.site) {
+      const siteId = props.site.site_id
+      props.connexionWorker.getEtatSite(siteId)
+        .then(etat=>{
+          console.debug("Etat site recu : %O", etat)
+          setEtatSite(etat)
+        })
+    }
+  }, [props.site])
+
   const site = props.site
   if(!site.ipns_id) return ''
 
+  let ipnsWebapp = ''
+  if(etatSite && etatSite.webapp) {
+    ipnsWebapp = etatSite.webapp.ipns_id
+  }
+
   return (
-    <Form.Group>
-      <Form.Label md={3}>Identificateur IPNS</Form.Label>
-      <div>{site.ipns_id}</div>
-    </Form.Group>
+    <>
+      <Form.Group>
+        <Form.Label md={3}>Identificateur IPNS de la configuration</Form.Label>
+        <div>{site.ipns_id}</div>
+      </Form.Group>
+
+      {ipnsWebapp?
+        <Form.Group>
+          <Form.Label md={3}>Identificateur IPNS de la webapp</Form.Label>
+          <div>{ipnsWebapp}</div>
+        </Form.Group>
+        :''}
+    </>
   )
 }

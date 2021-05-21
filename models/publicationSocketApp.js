@@ -53,6 +53,7 @@ function configurerEvenements(socket) {
       {eventName: 'grosfichiers/getContenuCollection', callback: async (params, cb) => {cb(await getContenuCollection(socket, params))}},
       {eventName: 'maitrecles/getCleFichier', callback: async (params, cb) => {cb(await getCleFichier(socket, params))}},
       {eventName: 'publication/etatPublication', callback: cb => {requeteEtatPublication(socket, cb)}},
+      {eventName: 'publication/etatSite', callback: (params, cb) => {requeteEtatSite(socket, params, cb)}},
     ]
   }
 
@@ -134,7 +135,9 @@ function requeteEtatPublication(socket, cb) {
   executerRequete('Publication.etatPublication', socket, null, cb)
 }
 
-
+function requeteEtatSite(socket, params, cb) {
+  executerRequete('Publication.etatSite', socket, params, cb)
+}
 
 async function executerRequete(domaineAction, socket, params, cb) {
   const amqpdao = socket.amqpdao
