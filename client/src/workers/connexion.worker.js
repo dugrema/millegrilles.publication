@@ -10,8 +10,12 @@ function connecter(opts) {
   return connexionClient.connecter(url, opts)
 }
 
+function requeteMapping(params) {
+  return connexionClient.emitBlocking('publication/requeteMapping', params, {noformat: true})
+}
+
 function requeteSites(params) {
-  return connexionClient.emitBlocking('publication/requeteSites', params, {noformat: true}, {noformat: true})
+  return connexionClient.emitBlocking('publication/requeteSites', params, {noformat: true})
 }
 
 function requeteSite(siteId) {
@@ -136,11 +140,15 @@ function resetWebapps() {
   return connexionClient.emitBlocking('publication/resetWebapps')
 }
 
+function setSiteDefaut(params) {
+  return connexionClient.emitBlocking('publication/setSiteDefaut', params, {domaine: 'Publication.setSiteDefaut'})
+}
+
 comlinkExpose({
   ...connexionClient,
   connecter,  // Override de connexionClient.connecter
 
-  requeteSites, requeteSite, requetePosts, requeteNoeudsPublics,
+  requeteMapping, requeteSites, requeteSite, requetePosts, requeteNoeudsPublics,
   requeteCollectionsPubliques, requeteListeCdns, requeteCleSsh,
   requeteForums, requeteSectionsSite, requeteSection, requetePartiesPage,
 
@@ -148,7 +156,7 @@ comlinkExpose({
   getEtatSite,
 
   creerSite, majSite, majSection, majCdn, supprimerCdn,
-  ajouterPartiePage, majPartiePage,
+  ajouterPartiePage, majPartiePage, setSiteDefaut,
 
   publierChangements, resetData, resetFichiers, resetWebapps,
 })

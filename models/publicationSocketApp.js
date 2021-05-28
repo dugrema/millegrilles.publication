@@ -6,6 +6,7 @@ function configurerEvenements(socket) {
     listenersPrives: [
     ],
     listenersProteges: [
+      {eventName: 'publication/requeteMapping', callback: (params, cb) => {requeteMapping(socket, params, cb)}},
       {eventName: 'publication/requeteSites', callback: (params, cb) => {requeteSites(socket, params, cb)}},
       {eventName: 'publication/requeteSite', callback: (params, cb) => {requeteSite(socket, params, cb)}},
       {eventName: 'publication/requetePosts', callback: (params, cb) => {requetePosts(socket, params, cb)}},
@@ -54,6 +55,9 @@ function configurerEvenements(socket) {
       {eventName: 'maitrecles/getCleFichier', callback: async (params, cb) => {cb(await getCleFichier(socket, params))}},
       {eventName: 'publication/etatPublication', callback: cb => {requeteEtatPublication(socket, cb)}},
       {eventName: 'publication/etatSite', callback: (params, cb) => {requeteEtatSite(socket, params, cb)}},
+      {eventName: 'publication/setSiteDefaut', callback: (transaction, cb) => {
+        soumettreTransaction(socket, transaction, 'Publication.setSiteDefaut', cb)
+      }},
     ]
   }
 
@@ -90,6 +94,10 @@ function configurerEvenements(socket) {
 //       }
 //     });
 // }
+
+function requeteMapping(socket, params, cb) {
+  executerRequete('Publication.configurationMapping', socket, params, cb)
+}
 
 function requeteSites(socket, params, cb) {
   executerRequete('Publication.listeSites', socket, params, cb)

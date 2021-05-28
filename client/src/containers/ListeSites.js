@@ -1,5 +1,5 @@
 import React from 'react'
-import {Row, Col, Button, Nav} from 'react-bootstrap'
+import {Row, Col, Button, Nav, Form, Alert} from 'react-bootstrap'
 import {proxy as comlinkProxy} from 'comlink'
 
 import EditerSite from './EditerSite'
@@ -12,8 +12,13 @@ const routingKeysSite = [
 export default class ListeSites extends React.Component {
 
   state = {
+    mapping: '',
     sites: '',
     siteId: '',
+    siteDefaut: '',
+
+    confirmation: '',
+    err: '',
   }
 
   componentDidMount() {
@@ -26,6 +31,10 @@ export default class ListeSites extends React.Component {
         wsa.subscribe(routingKeysSite, this.messageRecu, {exchange: ['3.protege']})
       })
     })
+   wsa.requeteMapping({}).then(mapping=>{
+     console.debug("Mapping charges : %O", mapping)
+     this.setState({mapping})
+   })
   }
 
   componentWillUnmount() {
@@ -65,6 +74,31 @@ export default class ListeSites extends React.Component {
     }
   }
 
+  setDefaut = event => {
+    const {name, value} = event.currentTarget
+    this.setState({'siteDefaut': value})
+  }
+
+  sauvegarderMapping = async () => {
+    const connexionWorker = this.props.rootProps.connexionWorker
+    if(this.state.siteDefaut) {
+      const reponse = await connexionWorker.setSiteDefaut({site_defaut: this.state.siteDefaut})
+      console.debug("Reponse : %O", reponse)
+      if(reponse.ok) {
+        this.setState({
+          confirmation: 'Changement de site par defaut complete.',
+          mapping: reponse.mapping,
+        })
+      }
+    } else {
+      console.debug("Aucun changement au site par defaut")
+    }
+  }
+
+  fermerMessages = () => {
+    this.setState({err: '', confirmation: ''})
+  }
+
   render() {
 
     if(this.state.siteId) {
@@ -76,6 +110,9 @@ export default class ListeSites extends React.Component {
       )
     }
 
+    const mapping = this.state.mapping || {}
+    var siteDefaut = this.state.siteDefaut || mapping.site_defaut
+
     // Afficher liste de sites
     return (
       <>
@@ -83,19 +120,60 @@ export default class ListeSites extends React.Component {
 
         <Nav.Link onClick={this.props.retour}>Retour</Nav.Link>
 
-        <AfficherListeSites sites={this.state.sites}
-                            setSiteId={this.setSiteId} />
+        <Form>
+          <Row>
+            <Col lg={1}>Defaut</Col>
+            <Col>Site</Col>
+          </Row>
 
-        <Row>
-          <Col>
-            <Button variant="secondary"
-                    onClick={this.creerSite}
-                    disabled={!this.props.rootProps.modeProtege}>Nouveau site</Button>
-          </Col>
-        </Row>
+          <AfficherListeSites sites={this.state.sites}
+                              setSiteId={this.setSiteId}
+                              siteDefaut={siteDefaut}
+                              setDefaut={this.setDefaut} />
+
+          <Row>
+            <Col>
+              <Button variant="secondary"
+                      onClick={this.creerSite}
+                      disabled={!this.props.rootProps.modeProtege}>
+                <span title="Ajouter un nouveau site"><i className="fa fa-plus"/></span>
+              </Button>
+            </Col>
+          </Row>
+
+          <AlertMessages confirmation={this.state.confirmation}
+                         err={this.state.err}
+                         fermerMessages={this.fermerMessages}/>
+
+          <Row>
+            <Col>
+              <Button variant="primary"
+                      onClick={this.sauvegarderMapping}
+                      disabled={!this.props.rootProps.modeProtege}>Sauvegarder</Button>
+            </Col>
+          </Row>
+        </Form>
       </>
     )
   }
+
+}
+
+function AlertMessages(props) {
+  var showErr = props.err?true:false
+  var showConf = !showErr && props.confirmation?true:false
+  return (
+    <>
+      <Alert show={showErr} variant="danger" onClose={props.fermerMessages} dismissible>
+        <Alert.Heading>Erreur</Alert.Heading>
+        <pre>{props.err}</pre>
+      </Alert>
+      <Alert show={showConf} variant="success" onClose={props.fermerMessages} dismissible>
+        <Alert.Heading>Confirmation</Alert.Heading>
+        <pre>{props.confirmation}</pre>
+      </Alert>
+    </>
+  )
 
 }
 
@@ -110,8 +188,18 @@ function AfficherListeSites(props) {
 
   const mapSite = sitesTries.map(item=>{
     const nomSite = item.nom_site || item.site_id
+    var estDefaut = props.siteDefaut === item.site_id
+
     return (
       <Row key={item.site_id}>
+        <Col lg={1}>
+          <Form.Check type="radio"
+                      id={`defaut-${item.site_id}`}
+                      onChange={props.setDefaut}
+                      name="siteDefaut"
+                      value={item.site_id}
+                      checked={estDefaut} />
+        </Col>
         <Col>
           <Button variant="link" onClick={props.setSiteId} value={item.site_id}>
             {nomSite}

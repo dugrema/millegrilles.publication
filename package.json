@@ -1,6 +1,6 @@
 {
   "name": "publication",
-  "version": "1.42.1",
+  "version": "1.43.0",
   "main": "index.js",
   "private": true,
   "repository": {
@@ -13,7 +13,7 @@
     "test": "node ./bin/test"
   },
   "dependencies": {
-    "@dugrema/millegrilles.common": "https://github.com/dugrema/millegrilles.common.nodejs.git#1.42",
+    "@dugrema/millegrilles.common": "https://github.com/dugrema/millegrilles.common.nodejs.git#1.43",
     "amqplib": "^0.5.6",
     "debug": "~2.6.9",
     "express": "~4.16.4",
