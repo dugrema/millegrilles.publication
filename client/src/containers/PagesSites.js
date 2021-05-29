@@ -166,7 +166,7 @@ function PageSection(props) {
   const boutonSauvegarderListe = async event => {
     const sectionId = props.section.section_id
     const sectionUpdatee = await sauvegarderSection(connexionWorker, sectionId, listePartiesPage, securitePage)
-    console.debug("Reponse secution updatee: %O", sectionUpdatee)
+    console.debug("Reponse section updatee: %O", sectionUpdatee)
 
     // Mettre a jour configuration de reference
     props.updateSection(sectionUpdatee)
@@ -690,8 +690,14 @@ async function chargerPartiesPages(connexionWorker, sectionId, setPartiesPages) 
 }
 
 async function sauvegarderSection(connexionWorker, sectionId, listePartiesPage, securite) {
-  const reponse = await connexionWorker.majSection({section_id: sectionId, parties_pages: listePartiesPage, securite: securite})
+  const params = {section_id: sectionId, parties_pages: listePartiesPage}
+  if(securite) {
+    params.securite = securite
+  }
+
+  const reponse = await connexionWorker.majSection(params)
   // console.debug("Reponse sauvegarder section : %O", reponse)
+
   return reponse.section
 }
 
