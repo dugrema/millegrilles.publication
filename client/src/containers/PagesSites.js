@@ -60,7 +60,9 @@ function Site(props) {
 
   const updateSection = (section) => {
     const listeEdit = listeSections.map(item=>{
-      if(item.section_id === section.section_id) return section
+      if(item.section_id === section.section_id) {
+        return section
+      }
       return item
     })
     setListeSections(listeEdit)
@@ -107,6 +109,7 @@ function PageSection(props) {
   const [showBrowserFichiers, setShowBrowserFichiers] = useState(false)
   const [mediaSelectionne, setMediaSelectionne] = useState('')
   const [partiePageIdMedia, setPartiePageIdMedia] = useState('')
+  const [securitePage, setSecuritePage] = useState('')
 
   const connexionWorker = props.rootProps.connexionWorker
 
@@ -162,9 +165,15 @@ function PageSection(props) {
 
   const boutonSauvegarderListe = async event => {
     const sectionId = props.section.section_id
-    const sectionUpdatee = await sauvegarderSection(connexionWorker, sectionId, listePartiesPage)
+    const sectionUpdatee = await sauvegarderSection(connexionWorker, sectionId, listePartiesPage, securitePage)
+    console.debug("Reponse secution updatee: %O", sectionUpdatee)
+
+    // Mettre a jour configuration de reference
     props.updateSection(sectionUpdatee)
+
+    // Cleanup form
     setListePartiesPage('')
+    setSecuritePage('')
   }
 
   const selectionnerMedia = partiePage_id => {
@@ -174,6 +183,11 @@ function PageSection(props) {
 
   const partiesPageDesactivees = partiesPage.filter(partiePage=>!listePartiesPageActuel.includes(partiePage.partiepage_id))
   // console.debug("Parties page desactivees : %O", partiesPageDesactivees)
+
+  const changerSecurite = event => {
+    const value = event.currentTarget.value
+    setSecuritePage(value)
+  }
 
   return (
     <>
@@ -186,7 +200,7 @@ function PageSection(props) {
         <RenderChampMultilingue champ={props.section.entete} defaut={props.section.section_id}/>
       </h2>
 
-      <Button onClick={boutonSauvegarderListe} disabled={!listePartiesPage}>Sauvegarder modifications</Button>
+      <Button onClick={boutonSauvegarderListe} disabled={!listePartiesPage && !securitePage}>Sauvegarder modifications</Button>
       <Button variant="secondary" onClick={props.retour}>Retour</Button>
 
       <h3>Ajouter partie</h3>
@@ -203,6 +217,11 @@ function PageSection(props) {
       </InputGroup>
 
       <h3>Page</h3>
+
+      <SecuritePage changerSecurite={changerSecurite}
+                    securite={securitePage || props.section.securite || props.site.securite} />
+
+
       {listePartiesPageActuel.map((partiePageId, idx)=>{
         const partiePage = partiesPage.filter(item=>item.partiepage_id===partiePageId)[0] || ''
         return <RenderPartiePage key={partiePage.partiepage_id || idx}
@@ -240,6 +259,23 @@ function PageSection(props) {
                                  rootProps={props.rootProps} />
       })}
     </>
+  )
+}
+
+function SecuritePage(props) {
+  /* Type/niveau de securite du site */
+  return (
+    <Form.Group>
+      <Form.Label>Type de securite de la page</Form.Label>
+      <Form.Check type='radio' name='securite'
+                  value='1.public' label='Public' id='securite-1'
+                  checked={props.securite === '1.public'}
+                  onChange={props.changerSecurite} />
+      <Form.Check type='radio' name='securite'
+                  value='2.prive' label='Prive' id='securite-2'
+                  checked={props.securite === '2.prive'}
+                  onChange={props.changerSecurite} />
+    </Form.Group>
   )
 }
 
@@ -653,8 +689,8 @@ async function chargerPartiesPages(connexionWorker, sectionId, setPartiesPages) 
   // console.debug("Parties page: %O", partiesPage)
 }
 
-async function sauvegarderSection(connexionWorker, sectionId, listePartiesPage) {
-  const reponse = await connexionWorker.majSection({section_id: sectionId, parties_pages: listePartiesPage})
+async function sauvegarderSection(connexionWorker, sectionId, listePartiesPage, securite) {
+  const reponse = await connexionWorker.majSection({section_id: sectionId, parties_pages: listePartiesPage, securite: securite})
   // console.debug("Reponse sauvegarder section : %O", reponse)
   return reponse.section
 }
