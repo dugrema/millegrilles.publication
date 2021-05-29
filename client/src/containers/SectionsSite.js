@@ -24,9 +24,13 @@ export default class SectionsSite extends React.Component {
   componentDidMount() {
     // Charger collections publiques
     const wsa = this.props.rootProps.websocketApp
-    wsa.requeteCollectionsPubliques().then(reponse=>{
+    const params = {}
+    if(this.props.site.securite === '2.prive') {
+      params.prive = true
+    }
+    wsa.requeteCollections(params).then(reponse=>{
       const collections = reponse.resultat
-      console.debug("Collections publiques : %O", collections)
+      console.debug("Collections publiques/privees : %O", collections)
       this.setState({collectionsPubliques: collections})
     }).catch(err=>{this.setState({err: this.state.err + '\n' + err})})
 

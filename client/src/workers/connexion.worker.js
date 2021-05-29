@@ -38,8 +38,8 @@ function requeteNoeudsPublics() {
   return connexionClient.emitBlocking('publication/requeteNoeuds', {}, {noformat: true})
 }
 
-function requeteCollectionsPubliques() {
-  return connexionClient.emitBlocking('publication/requeteCollectionsPubliques', {}, {noformat: true})
+function requeteCollections(params) {
+  return connexionClient.emitBlocking('publication/requeteCollectionsPubliques', params, {noformat: true})
 }
 
 function requeteListeCdns() {
@@ -149,7 +149,7 @@ comlinkExpose({
   connecter,  // Override de connexionClient.connecter
 
   requeteMapping, requeteSites, requeteSite, requetePosts, requeteNoeudsPublics,
-  requeteCollectionsPubliques, requeteListeCdns, requeteCleSsh,
+  requeteCollections, requeteListeCdns, requeteCleSsh,
   requeteForums, requeteSectionsSite, requeteSection, requetePartiesPage,
 
   getCollections, getContenuCollection, getCleFichier, getEtatPublication,
