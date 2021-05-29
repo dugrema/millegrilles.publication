@@ -144,6 +144,14 @@ function setSiteDefaut(params) {
   return connexionClient.emitBlocking('publication/setSiteDefaut', params, {domaine: 'Publication.setSiteDefaut'})
 }
 
+function creerForum(params) {
+  return connexionClient.emitBlocking('publication/creerForum', params, {domaine: 'Forum.creerForum'})
+}
+
+function modifierForum(params) {
+  return connexionClient.emitBlocking('publication/modifierForum', params, {domaine: 'Forum.modifierForum'})
+}
+
 comlinkExpose({
   ...connexionClient,
   connecter,  // Override de connexionClient.connecter
@@ -159,4 +167,5 @@ comlinkExpose({
   ajouterPartiePage, majPartiePage, setSiteDefaut,
 
   publierChangements, resetData, resetFichiers, resetWebapps,
+  creerForum, modifierForum,
 })

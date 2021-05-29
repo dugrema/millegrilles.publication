@@ -11,6 +11,7 @@ import {splitPEMCerts} from '@dugrema/millegrilles.common/lib/forgecommon'
 import ListeSites from './ListeSites'
 import CDNConfig from './ContentDeliveryNetworkConfig'
 import PagesSites from './PagesSites'
+import EditerForum from './EditerForum'
 import Deployer from './Deployer'
 
 import './App.css'
@@ -102,6 +103,8 @@ export class ApplicationPublication extends React.Component {
           ElementPage = ListeSites; break
         case 'pagesSites':
           ElementPage = PagesSites; break
+        case 'editerForum':
+          ElementPage = EditerForum; break
         case 'deployer':
           ElementPage = Deployer; break
         default:
@@ -153,6 +156,7 @@ function ChoisirSection(props) {
         <Nav.Link eventKey="listeSites">Sites</Nav.Link>
         <Nav.Link eventKey="cdnConfig">Destinations Content Delivery Network</Nav.Link>
         <Nav.Link eventKey="pagesSites">Pages Sites</Nav.Link>
+        <Nav.Link eventKey="editerForum">Editer Forum</Nav.Link>
         <Nav.Link eventKey="deployer">Deployer</Nav.Link>
       </Nav>
 

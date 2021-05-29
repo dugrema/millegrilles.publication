@@ -58,6 +58,14 @@ function configurerEvenements(socket) {
       {eventName: 'publication/setSiteDefaut', callback: (transaction, cb) => {
         soumettreTransaction(socket, transaction, 'Publication.setSiteDefaut', cb)
       }},
+      {eventName: 'publication/creerForum', callback: (transaction, cb) => {
+        debug("Transaction creerForum %O", transaction)
+        soumettreTransaction(socket, transaction, 'Forum.creerForum', cb)
+      }},
+      {eventName: 'publication/modifierForum', callback: (transaction, cb) => {
+        debug("Transaction modifierForum %O", transaction)
+        soumettreTransaction(socket, transaction, 'Forum.modifierForum', cb)
+      }},
     ]
   }
 
