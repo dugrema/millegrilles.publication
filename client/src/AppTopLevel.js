@@ -79,7 +79,7 @@ export default class AppTopLevel extends React.Component {
       //console.debug("toggleProtege upgrade")
       try {
         const resultat = await this.state.connexionWorker.upgradeProteger()
-        // console.debug("toggleProtege resultat : %O", resultat)
+        console.debug("toggleProtege resultat : %O", resultat)
       } catch(err) {
         console.error("Erreur upgrade protege %O", err)
       }
