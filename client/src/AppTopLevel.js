@@ -4,7 +4,6 @@ import openSocket from 'socket.io-client'
 import {proxy as comlinkProxy} from 'comlink'
 
 import {getCertificats, getClesPrivees} from './components/pkiHelper'
-import {splitPEMCerts} from '@dugrema/millegrilles.common/lib/forgecommon'
 
 // import { WebSocketManager } from 'millegrilles.common/lib/webSocketManager'
 import { Trans } from 'react-i18next';
