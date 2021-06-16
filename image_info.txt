@@ -4,6 +4,6 @@ NAME=millegrilles_web_publication
 ARCH_SUPPORTEES=( x86_64 armv7l aarch64 )
 URL_SERVEUR_DEV=mathieu@mg-dev4.maple.maceroc.com
 BRANCH=`git rev-parse --abbrev-ref HEAD`
-BUILD=1
+BUILD=0
 
 VERSION=$BRANCH.$BUILD
