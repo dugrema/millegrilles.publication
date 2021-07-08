@@ -38,17 +38,17 @@ function configurerEvenements(socket) {
       {eventName: 'publication/majPartiePage', callback: (transaction, cb) => {
         soumettreTransaction(socket, transaction, 'Publication.majPartiePage', cb)
       }},
-      {eventName: 'publication/publierChangements', callback: cb => {
-        soumettreCommande(socket, {}, 'Publication.publierComplet', cb)
+      {eventName: 'publication/publierChangements', callback: (params, cb) => {
+        soumettreCommande(socket, params, 'Publication.publierComplet', cb)
       }},
-      {eventName: 'publication/resetData', callback: cb => {
-        soumettreCommande(socket, {ignorer: ['fichier', 'webapps']}, 'Publication.resetRessources', cb)
+      {eventName: 'publication/resetData', callback: (params, cb) => {
+        soumettreCommande(socket, params, 'Publication.resetRessources', cb)
       }},
-      {eventName: 'publication/resetFichiers', callback: cb => {
-        soumettreCommande(socket, {inclure: ['fichier']}, 'Publication.resetRessources', cb)
+      {eventName: 'publication/resetFichiers', callback: (params, cb) => {
+        soumettreCommande(socket, params, 'Publication.resetRessources', cb)
       }},
-      {eventName: 'publication/resetWebapps', callback: cb => {
-        soumettreCommande(socket, {inclure: ['webapps']}, 'Publication.resetRessources', cb)
+      {eventName: 'publication/resetWebapps', callback: (params, cb) => {
+        soumettreCommande(socket, params, 'Publication.resetRessources', cb)
       }},
       {eventName: 'grosfichiers/getCollections', callback: async (params, cb) => {cb(await getCollections(socket, params))}},
       {eventName: 'grosfichiers/getContenuCollection', callback: async (params, cb) => {cb(await getContenuCollection(socket, params))}},
@@ -188,7 +188,12 @@ async function soumettreCommande(socket, commande, domaine, cb) {
   debug("Soumettre commande %s : %O", domaine, commande)
   try {
     const amqpdao = socket.amqpdao
-    const reponse = await amqpdao.transmettreCommande(domaine, commande)
+    const entete = commande['en-tete'] || {},
+          domaineRecu = entete.domaine
+    if(domaineRecu !== domaine) {
+      return cb({err: 'Mauvais domaine'})
+    }
+    const reponse = await amqpdao.transmettreCommande(domaine, commande, {noformat: true})
     return cb(reponse)
   } catch(err) {
     console.error("publicationSocketApp.soumettreCommande %s %O", domaine, err)

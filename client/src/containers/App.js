@@ -110,6 +110,7 @@ export class ApplicationPublication extends React.Component {
       }
 
       page = <ElementPage rootProps={rootProps}
+                          workers={this.props.workers}
                           setAfficherSection={this.props.setAfficherSection}
                           retour={this.retour} />
     }

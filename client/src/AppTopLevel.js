@@ -112,6 +112,10 @@ export default class AppTopLevel extends React.Component {
   render() {
 
     const rootProps = {...this.state, manifest, toggleProtege: this.toggleProtege}
+    const workers = {
+      connexion: this.state.connexionWorker,
+      chiffrage: this.state.chiffrageWorker,
+    }
 
     let page;
     if(!this.state.nomUsager || !this.state.connexionWorker) {
@@ -122,7 +126,8 @@ export default class AppTopLevel extends React.Component {
       page = <ApplicationPublication setSousMenuApplication={this.setSousMenuApplication}
                                      afficherSection={this.state.afficherSection}
                                      setAfficherSection={this.setAfficherSection}
-                                     rootProps={{...this.state}} />
+                                     rootProps={{...this.state}}
+                                     workers={workers} />
     }
 
     return (

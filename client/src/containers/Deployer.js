@@ -1,13 +1,31 @@
 import React, {useState, useEffect} from 'react'
-import {Alert, Nav, Row, Col, Button} from 'react-bootstrap'
+import {Alert, Nav, Row, Col, Button, Form} from 'react-bootstrap'
 
 export default function Deployer(props) {
+
+  const [sites, setSites] = useState([])
+  const [cdns, setCdns] = useState([])
+  const connexion = props.workers.connexion
+
+  useEffect(_=>{
+    connexion.requeteSites({}).then(sites=>{
+      console.debug("Sites charges : %O", sites)
+      setSites(sites)
+    })
+    connexion.requeteListeCdns({}).then(cdns=>{
+      console.debug("CDNs charges : %O", cdns)
+      setCdns(cdns)
+    })
+  }, [connexion, setSites, setCdns])
+
   return (
     <>
       <h2>Deployer</h2>
       <Button onClick={props.retour}>Retour</Button>
 
-      <BoutonsActions connexionWorker={props.rootProps.connexionWorker}/>
+      <BoutonsActions sites={sites}
+                      cdns={cdns}
+                      connexionWorker={props.rootProps.connexionWorker} />
 
       <RapportEtat connexionWorker={props.rootProps.connexionWorker} />
     </>
@@ -16,6 +34,8 @@ export default function Deployer(props) {
 
 function BoutonsActions(props) {
 
+  const [siteSelectionne, setSiteSelectionne] = useState('')
+  const [cdnSelectionne, setCdnSelectionne] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [erreur, setErreur] = useState('')
 
@@ -25,7 +45,7 @@ function BoutonsActions(props) {
     setConfirmation('')
     setErreur('')
     try {
-      const reponse = await connexionWorker.publierChangements()
+      const reponse = await connexionWorker.publierChangements(siteSelectionne)
       console.debug("Confirmation publier changements : %O", confirmation)
       setConfirmation('Ok')
     } catch(err) {
@@ -38,7 +58,7 @@ function BoutonsActions(props) {
     setConfirmation('')
     setErreur('')
     try {
-      const reponse = await connexionWorker.resetData()
+      const reponse = await connexionWorker.resetData(siteSelectionne)
       console.debug("Confirmation reset data : %O", confirmation)
       setConfirmation('Ok')
     } catch(err) {
@@ -51,7 +71,7 @@ function BoutonsActions(props) {
     setConfirmation('')
     setErreur('')
     try {
-      const reponse = await connexionWorker.resetFichiers()
+      const reponse = await connexionWorker.resetFichiers(cdnSelectionne)
       console.debug("Confirmation reset fichiers : %O", confirmation)
       setConfirmation('Ok')
     } catch(err) {
@@ -64,7 +84,7 @@ function BoutonsActions(props) {
     setConfirmation('')
     setErreur('')
     try {
-      const reponse = await connexionWorker.resetWebapps()
+      const reponse = await connexionWorker.resetWebapps(cdnSelectionne)
       console.debug("Confirmation reset webapps : %O", confirmation)
       setConfirmation('Ok')
     } catch(err) {
@@ -74,10 +94,33 @@ function BoutonsActions(props) {
 
   return (
     <>
-      <h2>Actions globales</h2>
+      <h3>Actions par site</h3>
 
       <Alert variant="success" show={confirmation?true:false}>{''+confirmation}</Alert>
       <Alert variant="danger" show={erreur?true:false}>{''+erreur}</Alert>
+
+      <Form.Group controlId='siteSelect'>
+        <Row>
+          <Col md={8}>
+            <Form.Label>Site</Form.Label>
+          </Col>
+          <Col>
+            <Form.Control as='select'
+                          name='site'
+                          onChange={event=>{setSiteSelectionne(event.currentTarget.value)}}
+                          value={siteSelectionne}>
+              <option value=''>Tous</option>
+              {props.sites.map(site=>{
+                return (
+                  <option key={site.site_id} value={site.site_id}>
+                    {site.nom_site}
+                  </option>
+                )
+              })}
+            </Form.Control>
+          </Col>
+        </Row>
+      </Form.Group>
 
       <Row>
         <Col lg={8}>
@@ -97,6 +140,31 @@ function BoutonsActions(props) {
           <Button onClick={resetData}>Reset data</Button>
         </Col>
       </Row>
+
+      <h3>Actions par CDN</h3>
+
+      <Form.Group controlId='cdnSelect'>
+        <Row>
+          <Col md={8}>
+            <Form.Label>CDN</Form.Label>
+          </Col>
+          <Col>
+            <Form.Control as='select'
+                          name="cdn"
+                          onChange={event=>{setCdnSelectionne(event.currentTarget.value)}}
+                          value={cdnSelectionne}>
+              <option value=''>Tous</option>
+              {props.cdns.map(cdn=>{
+                return (
+                  <option key={cdn.cdn_id} value={cdn.cdn_id}>
+                    {cdn.description}
+                  </option>
+                )
+              })}
+            </Form.Control>
+          </Col>
+        </Row>
+      </Form.Group>
 
       <Row>
         <Col lg={8}>
@@ -238,10 +306,10 @@ function AfficherErreurs(props) {
     <>
       <h3>Erreurs</h3>
 
-      {Object.keys(dictErreursParCdn).map(cdnId=>{
+      {Object.keys(dictErreursParCdn).map((cdnId, idx)=>{
         const infoCdn = props.dictCdns[cdnId] || ''
         const nomCdn = infoCdn.description || cdnId
-        return <AfficherErreursCdn key={cdnId}
+        return <AfficherErreursCdn key={idx}
                                    cdnId={cdnId}
                                    nomCdn={nomCdn}
                                    erreurs={dictErreursParCdn[cdnId]} />
@@ -269,9 +337,9 @@ function AfficherErreursCdn(props) {
     <>
       <p>CDN: <strong>{props.nomCdn}</strong> ({props.cdnId})</p>
 
-      {erreurs.map(item=>{
+      {erreurs.map((item, idx)=>{
         return (
-          <Row>
+          <Row key={idx}>
             <Col lg={2}>{item['_mg-libelle']}</Col>
             <Col lg={5}>
               <span className="identificateur-tronquer">

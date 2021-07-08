@@ -133,20 +133,47 @@ function supprimerCdn(transaction) {
   return connexionClient.emitBlocking('publication/supprimerCdn', transaction, {domaine: 'Publication.supprimerCdn'})
 }
 
-function publierChangements() {
-  return connexionClient.emitBlocking('publication/publierChangements')
+function publierChangements(siteId) {
+  return connexionClient.emitBlocking(
+    'publication/publierChangements',
+    {site_id: siteId?siteId:null},
+    {domaine: 'Publication.publierComplet', attacherCertificat: true}
+  )
 }
 
-function resetData() {
-  return connexionClient.emitBlocking('publication/resetData')
+function resetData(siteId) {
+  return connexionClient.emitBlocking(
+    'publication/resetData',
+    {
+      site_id: siteId?siteId:null,
+      ignorer: ['fichier', 'webapps'],
+    },
+    {domaine: 'Publication.resetRessources', attacherCertificat: true}
+  )
 }
 
-function resetFichiers() {
-  return connexionClient.emitBlocking('publication/resetFichiers')
+function resetFichiers(cdnId) {
+  return connexionClient.emitBlocking(
+    'publication/resetFichiers',
+    {
+      // site_id: siteId?siteId:null,
+      cdn_id: cdnId?cdnId:null,
+      inclure: ['fichier', 'collection_fichiers']
+    },
+    {domaine: 'Publication.resetRessources', attacherCertificat: true}
+  )
 }
 
-function resetWebapps() {
-  return connexionClient.emitBlocking('publication/resetWebapps')
+function resetWebapps(cdnId) {
+  return connexionClient.emitBlocking(
+    'publication/resetWebapps',
+    {
+      // site_id: siteId?siteId:null,
+      cdn_id: cdnId?cdnId:null,
+      inclure: ['webapps']
+    },
+    {domaine: 'Publication.resetRessources', attacherCertificat: true}
+  )
 }
 
 function setSiteDefaut(params) {
