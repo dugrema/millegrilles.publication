@@ -6,10 +6,11 @@ import 'react-summernote/lang/summernote-fr-FR' // you can import any other loca
 //import 'bootstrap/dist/js/bootstrap.min.js';
 
 // Import bootstrap(v3 or v4) dependencies
-import 'bootstrap/js/dist/modal';
-import 'bootstrap/js/dist/dropdown';
-import 'bootstrap/js/dist/tooltip';
-import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/js/bootstrap.min.js'
+//import 'bootstrap/js/dist/modal';
+//import 'bootstrap/js/dist/dropdown';
+//import 'bootstrap/js/dist/tooltip';
+import 'bootstrap/dist/css/bootstrap.min.css'
 
 export default class RichTextEditor extends React.Component {
 
@@ -48,7 +49,7 @@ export default class RichTextEditor extends React.Component {
             ['fontname', ['fontname']],
             ['para', ['ul', 'ol', 'paragraph']],
             ['table', ['table']],
-            ['insert', ['link', 'picture', 'video']],
+            ['insert', ['link']],
             ['view', ['fullscreen', 'codeview']]
           ]
         }}

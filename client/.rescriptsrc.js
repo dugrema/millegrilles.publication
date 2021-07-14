@@ -34,6 +34,7 @@ function makeMultipleWebworkersWork(config){
     return config
 }
 
-module.exports =[
+
+module.exports = [
     makeMultipleWebworkersWork,
 ]
